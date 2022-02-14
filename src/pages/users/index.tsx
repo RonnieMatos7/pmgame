@@ -10,12 +10,60 @@ import { useState } from "react";
 import { queryClient } from "../../services/queryClient";
 import { api } from "../../services/api";
 import { GetServerSideProps } from "next";
+import { graphQLClient } from '../../utils/graphql-client';
+import useSWR from 'swr';
+import { gql } from 'graphql-request';
 
-export default function UserList({ users }) {
+import { getAuthCookie } from '../../utils/auth-cookies';
+
+interface User {
+  _id: string
+  name: string
+  email: string
+  role: string
+  department: string
+}
+
+interface UserProps {
+  data: {
+    allUsers: {
+      data: User[]
+    }
+  }
+}
+
+
+export default function UserList({ token }) {
+  const fetcher = async (query) => await graphQLClient(token).request(query);
   const [page, setPage] = useState(1);
-  const { data, isLoading, isFetching, error } = useUsers(page, {
+/*   const { data, isLoading, isFetching, error } = useUsers(page, {
     initialData: users,
-  })
+  }) */
+
+  const { data, error, mutate  } = useSWR<any, any>(
+    gql`
+      {
+        allUsers {
+          data {
+            _id
+            name
+            email
+            role
+            department
+          }
+        }
+      }
+    `,
+    fetcher
+  );
+  
+  if(!data) {
+    return <div>Loading...</div>
+  }
+  
+  if(error) {
+    return <div>Error...</div>
+  }
 
   const isWideVersion = useBreakpointValue({
     base: false,
@@ -43,8 +91,8 @@ export default function UserList({ users }) {
           <Flex mb="8" justify="space-between" align="center">
             <Heading size="lg" fontWeight="normal">
               Usuários
-
-              { !isLoading && isFetching && <Spinner size="sm" color="gray.500" ml="4" /> }
+              
+              {/* { !data && <Spinner size="sm" color="gray.500" ml="4" /> } */}
             </Heading>
 
             <NextLink href="/users/create" passHref>
@@ -60,17 +108,7 @@ export default function UserList({ users }) {
             </NextLink>
           </Flex>
 
-          { isLoading ? (
-            <Flex justify="center">
-              <Spinner />
-            </Flex>
-          ) : error ? (
-            <Flex justify="center">
-              <Text>Falha ao obter dados dos usuários.</Text>
-            </Flex>
-          ) : (
-            <>
-              <Table colorScheme="whiteAlpha">
+          <Table colorScheme="whiteAlpha">
                 <Thead>
                   <Tr>
                     <Th px={["4", "4", "6"]} color="gray.300" width="8">
@@ -81,21 +119,21 @@ export default function UserList({ users }) {
                   </Tr>
                 </Thead>
                 <Tbody>
-                  {data.users.map(user => {
+                  {data?.data.allUsers.data.map(user => {
                     return (
-                      <Tr key={user.id}>
+                      <Tr key={user._id}>
                         <Td px={["4", "4", "6"]}>
                           <Checkbox colorScheme="pink" />
                         </Td>
                         <Td>
                           <Box>
-                            <Link color="purple.400" onMouseEnter={() => handlePrefetchUser(user.id)}>
+                            <Link color="purple.400" onMouseEnter={() => handlePrefetchUser(user._id)}>
                               <Text fontWeight="bold">{user.name}</Text>
                             </Link>
                             <Text fontSize="sm" color="gray.300">{user.email}</Text>
                           </Box>
                         </Td>
-                        { isWideVersion && <Td>{user.createdAt}</Td> }
+                        { isWideVersion && <Td>{user?.createdAt}</Td> }
                       </Tr>
                     )
                   })}
@@ -103,24 +141,17 @@ export default function UserList({ users }) {
               </Table>
 
               <Pagination
-                totalCountOfRegisters={data.totalCount}
+                totalCountOfRegisters={data?.totalCount}
                 currentPage={page}
                 onPageChange={setPage}
               />
-            </>
-          )}
         </Box>
       </Flex>
     </Box>
   );
 }
 
-export const getServerSideProps: GetServerSideProps = async () => {
-  const { users, totalCount } = await getUsers(1)
-
-  return {
-    props: {
-      users,
-    }
-  }
+export async function getServerSideProps(ctx) {
+  const token = getAuthCookie(ctx.req);
+  return { props: { token: token || null } };
 }

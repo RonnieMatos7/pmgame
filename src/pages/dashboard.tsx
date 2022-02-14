@@ -2,6 +2,7 @@ import { Box, Flex, SimpleGrid, Text, theme } from "@chakra-ui/react";
 import dynamic from 'next/dynamic';
 import { Header } from "../components/Header";
 import { Sidebar } from "../components/Sidebar";
+import { getAuthCookie } from "../utils/auth-cookies";
 
 const Chart = dynamic(() => import('react-apexcharts'), {
   ssr: false,
@@ -90,4 +91,14 @@ export default function Dashboard() {
       </Flex>
     </Flex>
   )
+}
+
+export async function getServerSideProps({res, req, params}) {
+  const token = getAuthCookie(req);
+  if(!token){
+    res.setHeader("location", "/");
+    res.statusCode = 302;
+    res.end();
+  }
+  return { props: { token: token || null } };
 }

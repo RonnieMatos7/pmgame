@@ -1,0 +1,10 @@
+type User {
+  email: String! @unique
+  name: String!
+  department: String
+  role: String!
+}
+
+type Query {
+  allUsers: [User!]
+}
