@@ -1,7 +1,7 @@
 import NextLink from "next/link";
-import { Box, Button, Checkbox, Flex, Heading, Icon, Link, Spinner, Table, Tbody, Td, Text, Th, Thead, Tr, useBreakpointValue } from "@chakra-ui/react";
-import { RiAddLine } from "react-icons/ri";
-
+import { Box, Button, Checkbox, Flex, Heading, Icon, IconButton, Link, Spinner, Table, Tbody, Td, Text, Th, Thead, Tooltip, Tr, useBreakpointValue } from "@chakra-ui/react";
+import { RiAddLine, RiPencilFill, RiDeleteBin2Fill } from "react-icons/ri";
+import { format } from "date-fns";
 import { Header } from "../../components/Header";
 import { Pagination } from "../../components/Pagination";
 import { Sidebar } from "../../components/Sidebar";
@@ -15,6 +15,8 @@ import useSWR from 'swr';
 import { gql } from 'graphql-request';
 
 import { getAuthCookie } from '../../utils/auth-cookies';
+import { useQuery } from "react-query";
+import players from "../api/players";
 
 interface User {
   _id: string
@@ -34,32 +36,25 @@ interface UserProps {
 
 
 export default function UserList({ token }) {
-  const fetcher = async (query) => await graphQLClient(token).request(query);
-  const [page, setPage] = useState(1);
-/*   const { data, isLoading, isFetching, error } = useUsers(page, {
-    initialData: users,
-  }) */
+  const { data, isLoading, error} = useQuery('players', async () => {
+    const response = await api.get('/user/getAllUsers')
+    
+    const players = response.data?.map(player => {
+      return {
+        id: player['ref']['@ref'].id,
+        name: player.data.name,
+        department: player.data.department,
+        role: player.data.role,
+        email: player.data.email,
+        score: player.data.score,
+        created_at: format(player.data.created_at, 'dd/MM/yyyy'),
+        image_url: player.data.image_url,
+      };
+    })
+    return players.sort((a,b) => (a.name > b.name) ? 1 : -1);
+  })
 
-  const { data, error, mutate  } = useSWR<any, any>(
-    gql`
-      {
-        allUsers {
-          data {
-            _id
-            name
-            email
-            role
-            department
-          }
-        }
-      }
-    `,
-    fetcher
-  );
   
-  if(!data) {
-    return <div>Loading...</div>
-  }
   
   if(error) {
     return <div>Error...</div>
@@ -115,13 +110,16 @@ export default function UserList({ token }) {
                       <Checkbox colorScheme="pink" />
                     </Th>
                     <Th>Usuário</Th>
+                    { isWideVersion && <Th>Departamento</Th> }
+                    { isWideVersion && <Th>Perfil</Th> }
                     { isWideVersion && <Th>Data de cadastro</Th> }
+                    <Th>Ação</Th>
                   </Tr>
                 </Thead>
                 <Tbody>
-                  {data?.data.allUsers.data.map(user => {
+                  {data?.map(user => {
                     return (
-                      <Tr key={user._id}>
+                      <Tr key={user.id}>
                         <Td px={["4", "4", "6"]}>
                           <Checkbox colorScheme="pink" />
                         </Td>
@@ -133,25 +131,53 @@ export default function UserList({ token }) {
                             <Text fontSize="sm" color="gray.300">{user.email}</Text>
                           </Box>
                         </Td>
-                        { isWideVersion && <Td>{user?.createdAt}</Td> }
+                        { isWideVersion && <Td>{user?.department}</Td> }
+                        { isWideVersion && <Td>{user?.role}</Td> }
+                        { isWideVersion && <Td>{user?.created_at}</Td> }
+                        <Td>
+                          <NextLink href={`/users/update/${user.id}`} passHref>
+                            <Tooltip hasArrow label='Editar Usuário' placement='top'>
+                              <IconButton
+                                colorScheme='teal'
+                                aria-label='edit'
+                                size='md'
+                                fontSize="xl"
+                                ml='2'
+                                icon={<RiPencilFill />}
+                              />
+                            </Tooltip>
+                          </NextLink>
+                            <Tooltip hasArrow label='Deletar Usuário' placement='top'>
+                              <IconButton
+                                colorScheme='pink'
+                                aria-label='delete'
+                                size='md'
+                                fontSize="xl"
+                                ml='2'
+                                icon={<RiDeleteBin2Fill />}
+                              />
+                            </Tooltip>
+                        </Td>
+
                       </Tr>
                     )
                   })}
                 </Tbody>
               </Table>
 
-              <Pagination
-                totalCountOfRegisters={data?.totalCount}
-                currentPage={page}
-                onPageChange={setPage}
-              />
+
         </Box>
       </Flex>
     </Box>
   );
 }
 
-export async function getServerSideProps(ctx) {
-  const token = getAuthCookie(ctx.req);
+export async function getServerSideProps({res, req, params}) {
+  const token = getAuthCookie(req);
+  if(!token){
+    res.setHeader("location", "/");
+    res.statusCode = 302;
+    res.end();
+  }
   return { props: { token: token || null } };
 }

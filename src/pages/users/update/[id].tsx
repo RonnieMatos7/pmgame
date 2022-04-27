@@ -4,13 +4,13 @@ import * as yup from 'yup';
 import { yupResolver } from '@hookform/resolvers/yup'
 import Link from "next/link";
 import { useRouter } from "next/router";
-import { useMutation } from 'react-query'
+import { useMutation, useQuery } from 'react-query'
 
-import { Input } from "../../components/Form/Input";
-import { Header } from "../../components/Header";
-import { Sidebar } from "../../components/Sidebar";
-import { api } from "../../services/api";
-import { queryClient } from "../../services/queryClient";
+import { Input } from "../../../components/Form/Input";
+import { Header } from "../../../components/Header";
+import { Sidebar } from "../../../components/Sidebar";
+import { api } from "../../../services/api";
+import { queryClient } from "../../../services/queryClient";
 
 type CreateUserFormData = {
   name: string;
@@ -33,14 +33,24 @@ const createUserFormSchema = yup.object().shape({
   ], 'As senhas precisam ser iguais')
 })
 
-export default function CreateUser() {
+export default function UpdateUser() {
   const router = useRouter()
+  const {id} = router.query
+  
 
-  const createUser = useMutation(async (user: CreateUserFormData) => {
-    const response = await api.post('createUser', {
+  const { data, isLoading, error} = useQuery('user', async () => {
+    const response = await api.get(`/user/get/${id}`)
+    const user = response.data
+    return user;
+  })
+  
+  
+
+  const updateUser = useMutation(async (user: CreateUserFormData) => {
+    const response = await api.post(`user/update/${id}`, {
       user: {
         ...user,
-        created_at: new Date(),
+        updated_at: new Date(),
       }
     })
 
@@ -55,8 +65,8 @@ export default function CreateUser() {
     resolver: yupResolver(createUserFormSchema)
   })
 
-  const handleCreateUser: SubmitHandler<CreateUserFormData> = async (values) => {
-    await createUser.mutateAsync(values);
+  const handleUpdateUser: SubmitHandler<CreateUserFormData> = async (values) => {
+    await updateUser.mutateAsync(values);
 
     router.push('/users')
   }
@@ -74,7 +84,7 @@ export default function CreateUser() {
           borderRadius={8}
           bg="gray.800"
           p={["6", "8"]}
-          onSubmit={handleSubmit(handleCreateUser)}
+          onSubmit={handleSubmit(handleUpdateUser)}
         >
           <Heading size="lg" fontWeight="normal">Criar usuário</Heading>
 
@@ -85,6 +95,7 @@ export default function CreateUser() {
               <Input
                 name="name"
                 label="Nome completo"
+                defaultValue={data?.name}
                 error={errors.name}
                 {...register('name')}
               />
@@ -92,12 +103,14 @@ export default function CreateUser() {
                 name="email"
                 type="email"
                 label="E-mail"
+                defaultValue={data?.email}
                 error={errors.email}
                 {...register('email')}
               />
                <Input
                 name="department"
                 label="Departamento"
+                defaultValue={data?.department}
                 error={errors.name}
                 {...register('department')}
               />
@@ -105,6 +118,7 @@ export default function CreateUser() {
                 <Text fontWeight='medium'>Perfil do Usuário</Text>
                 <Select
                  mt='3'
+                 value={data?.role}
                   name="role"
                   label="Perfil do Usuário"
                   error={errors.name}
@@ -117,6 +131,7 @@ export default function CreateUser() {
               <Input
                 name="image_url"
                 label="Link Imagem de Perfil"
+                defaultValue={data?.image_url}
                 error={errors.name}
                 {...register('image_url')}
               />
