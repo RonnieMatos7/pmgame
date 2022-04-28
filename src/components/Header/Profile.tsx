@@ -4,6 +4,7 @@ interface ProfileProps {
   showProfileData?: boolean;
   user:{
     email: string;
+    image_url:string;
     name: string;
     department: string;
     role: string;
@@ -22,7 +23,7 @@ export function Profile({ showProfileData = true, user }: ProfileProps) {
         </Box>
       )}
 
-      <Avatar size="md" name={user?.name} />
+      <Avatar size="md" name={user?.name} src={user?.image_url} />
     </Flex>
   );
 }

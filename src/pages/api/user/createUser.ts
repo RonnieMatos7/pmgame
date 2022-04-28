@@ -25,7 +25,7 @@ export default async (req: NextApiRequest, res: NextApiResponse<Player[] | any >
   if(req.method === 'POST'){
 
     
-    const { name, role, department, image_url, password, created_at } = req.body.user;
+    const { name, email, role, department, image_url, password, created_at } = req.body.user;
     
     
     try {
@@ -35,6 +35,7 @@ export default async (req: NextApiRequest, res: NextApiResponse<Player[] | any >
           data: {
             name,
             role,
+            email,
             department,
             image_url,
             created_at,
