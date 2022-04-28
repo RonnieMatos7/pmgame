@@ -32,17 +32,17 @@ export default async (req: NextApiRequest, res: NextApiResponse<Player |any >) =
     
     
     try {
-      const getUser = await authClient(process.env.FAUNA_GUEST_SECRET).query<Player>(
+      const getReward = await authClient(process.env.FAUNA_GUEST_SECRET).query<Player>(
         q.Get(
           q.Ref(
-            q.Collection('User'), id
+            q.Collection('Reward'), id
           )
         )
       );
 
       
       // ok
-      res.status(200).json(getUser.data)
+      res.status(200).json(getReward.data)
     } catch (e) {
       // something went wrong
       res.status(500).json({ error: e.message });

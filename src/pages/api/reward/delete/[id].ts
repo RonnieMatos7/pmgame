@@ -24,31 +24,31 @@ export default async (req: NextApiRequest, res: NextApiResponse<Player |any >) =
     return res.status(401).send('Auth cookie not found');
   }
   
-  if(req.method === 'GET'){
+  if(req.method === 'DELETE'){
 
       
     const {query: { id },} = req;
 
-    
+    console.log(id)
     
     try {
-      const getUser = await authClient(process.env.FAUNA_GUEST_SECRET).query<Player>(
-        q.Get(
+      const deleteUser = await authClient(process.env.FAUNA_GUEST_SECRET).query<Player>(
+        q.Delete(
           q.Ref(
-            q.Collection('User'), id
+            q.Collection('Reward'), id
           )
         )
       );
 
       
       // ok
-      res.status(200).json(getUser.data)
+      res.status(200).end()
     } catch (e) {
       // something went wrong
       res.status(500).json({ error: e.message });
     }
   }else {
-    res.setHeader('Allow', 'GET')
+    res.setHeader('Allow', 'DELETE')
     res.status(405).end('Method not allowed')
 }
 };

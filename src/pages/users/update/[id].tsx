@@ -26,11 +26,7 @@ const createUserFormSchema = yup.object().shape({
   name: yup.string().required('Nome obrigatório'),
   email: yup.string().required('E-mail obrigatório').email('E-mail inválido'),
   role: yup.string().required('Perfil obrigatório'),
-  department: yup.string().required('Departamento obrigatório'),
-  password: yup.string().required('Senha obrigatória').min(6, 'No mínimo 6 caracteres'),
-  password_confirmation: yup.string().oneOf([
-    null, yup.ref('password')
-  ], 'As senhas precisam ser iguais')
+  department: yup.string().required('Departamento obrigatório')
 })
 
 export default function UpdateUser() {
@@ -47,7 +43,7 @@ export default function UpdateUser() {
   
 
   const updateUser = useMutation(async (user: CreateUserFormData) => {
-    const response = await api.post(`user/update/${id}`, {
+    const response = await api.put(`user/update/${id}`, {
       user: {
         ...user,
         updated_at: new Date(),
@@ -86,7 +82,7 @@ export default function UpdateUser() {
           p={["6", "8"]}
           onSubmit={handleSubmit(handleUpdateUser)}
         >
-          <Heading size="lg" fontWeight="normal">Criar usuário</Heading>
+          <Heading size="lg" fontWeight="normal">Atualizar Cadastro</Heading>
 
           <Divider my="6" borderColor="gray.700" />
 
@@ -118,7 +114,6 @@ export default function UpdateUser() {
                 <Text fontWeight='medium'>Perfil do Usuário</Text>
                 <Select
                  mt='3'
-                 value={data?.role}
                   name="role"
                   label="Perfil do Usuário"
                   error={errors.name}
@@ -137,22 +132,7 @@ export default function UpdateUser() {
               />
             </SimpleGrid>
 
-            <SimpleGrid minChildWidth="240px" spacing={["6", "8"]} w="100%">
-              <Input
-                name="password"
-                type="password"
-                label="Senha"
-                error={errors.password}
-                {...register('password')}
-              />
-              <Input
-                name="password_confirmation"
-                type="password"
-                label="Confirmação da senha"
-                error={errors.password_confirmation}
-                {...register('password_confirmation')}
-              />
-            </SimpleGrid>
+            
           </VStack>
 
           <Flex mt="8" justify="flex-end">

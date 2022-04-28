@@ -38,22 +38,18 @@ interface UserProps {
 export default function UserList({ token }) {
   const toast = useToast()
   
-  const { data, isLoading, error} = useQuery('players', async () => {
-    const response = await api.get('/user/getAllUsers')
+  const { data, isLoading, error} = useQuery('rewards', async () => {
+    const response = await api.get('/reward/getAll')
     
-    const players = response.data?.map(player => {
+    const rewards = response.data?.map(reward => {
       return {
-        id: player['ref']['@ref'].id,
-        name: player.data.name,
-        department: player.data.department,
-        role: player.data.role,
-        email: player.data.email,
-        score: player.data.score,
-        created_at: player.data.created_at,//format(player.data.created_at, 'dd/MM/yyyy'),
-        image_url: player.data.image_url,
+        id: reward['ref']['@ref'].id,
+        title: reward.data.title,
+        score: reward.data.score,
+        created_at: reward.data.created_at,
       };
     })
-    return players.sort((a,b) => (a.name > b.name) ? 1 : -1);
+    return rewards.sort((a,b) => (a.title > b.title) ? 1 : -1);
   })
 
   
@@ -62,28 +58,28 @@ export default function UserList({ token }) {
     return <div>Error...</div>
   }
 
-  const isWideVersion = useBreakpointValue({
+/*   const isWideVersion = useBreakpointValue({
     base: false,
     lg: true,
-  })
+  }) */
 
-  async function handlePrefetchUser(userId: string) {
-    await queryClient.prefetchQuery(['user', userId], async () => {
-      const response = await api.get(`users/${userId}`)
+  /* async function handlePrefetchReward(rewardId: string) {
+    await queryClient.prefetchQuery(['reward', rewardId], async () => {
+      const response = await api.get(`rewards/${rewardId}`)
 
       return response.data;
     }, {
       staleTime: 1000 * 60 * 10, // 10 minutes
     })
-  }
+  } */
 
-  function handleDeleteUser(user_id:string) {
+  function handleDeleteUser(reward_id:string) {
 
     try {
-      api.delete(`/user/delete/${user_id}`)
+      api.delete(`/reward/delete/${reward_id}`)
 
       toast({
-        title: "Usuário excluído com sucesso",
+        title: "Recompensa excluída com sucesso",
         status: "success",
         position:"top-right",
         duration: 3000,
@@ -91,7 +87,7 @@ export default function UserList({ token }) {
       })
     } catch (error) {
       toast({
-        title: `Erro na exclusão do usuário`,
+        title: `Erro na exclusão da recompensa`,
         status: "error",
         position:"top-right",
         duration: 3000,
@@ -113,12 +109,12 @@ export default function UserList({ token }) {
         <Box flex="1" borderRadius={8} bg="gray.800" p="8">
           <Flex mb="8" justify="space-between" align="center">
             <Heading size="lg" fontWeight="normal">
-              Usuários
+              Recompensas
               
               {/* { !data && <Spinner size="sm" color="gray.500" ml="4" /> } */}
             </Heading>
 
-            <NextLink href="/users/create" passHref>
+            <NextLink href="/rewards/create" passHref>
               <Button
                 as="a"
                 size="sm"
@@ -137,34 +133,25 @@ export default function UserList({ token }) {
                     <Th px={["4", "4", "6"]} color="gray.300" width="8">
                       <Checkbox colorScheme="pink" />
                     </Th>
-                    <Th>Usuário</Th>
-                    { isWideVersion && <Th>Departamento</Th> }
-                    { isWideVersion && <Th>Perfil</Th> }
-                    { isWideVersion && <Th>Data de cadastro</Th> }
+                    <Th>Nome</Th>
+                    <Th>Pontuação</Th>
+                    <Th>Criado em</Th>
                     <Th>Ação</Th>
                   </Tr>
                 </Thead>
                 <Tbody>
-                  {data?.map(user => {
+                  {data?.map(reward => {
                     return (
-                      <Tr key={user.id}>
+                      <Tr key={reward.id}>
                         <Td px={["4", "4", "6"]}>
                           <Checkbox colorScheme="pink" />
                         </Td>
-                        <Td>
-                          <Box>
-                            <Link color="purple.400" onMouseEnter={() => handlePrefetchUser(user._id)}>
-                              <Text fontWeight="bold">{user.name}</Text>
-                            </Link>
-                            <Text fontSize="sm" color="gray.300">{user.email}</Text>
-                          </Box>
-                        </Td>
-                        { isWideVersion && <Td>{user?.department}</Td> }
-                        { isWideVersion && <Td>{user?.role}</Td> }
-                        { isWideVersion && <Td>{user?.created_at}</Td> }
+                        <Td>{reward?.title}</Td>
+                        <Td>{reward?.score}</Td>
+                        <Td>{reward?.created_at}</Td>
                         <Td>
                           <Tooltip hasArrow label='Editar Usuário' placement='top'>
-                            <NextLink href={`/users/update/${user.id}`} passHref>
+                            <NextLink href={`/rewards/update/${reward.id}`} passHref>
                                 <IconButton
                                   colorScheme='teal'
                                   aria-label='edit'
@@ -178,7 +165,7 @@ export default function UserList({ token }) {
                             <Tooltip hasArrow label='Deletar Usuário' placement='top'>
                               <IconButton
                                 colorScheme='pink'
-                                onClick={() =>handleDeleteUser(user.id)}
+                                onClick={() =>handleDeleteUser(reward.id)}
                                 aria-label='delete'
                                 size='md'
                                 fontSize="xl"
