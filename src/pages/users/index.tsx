@@ -1,5 +1,5 @@
 import NextLink from "next/link";
-import { Box, Button, Checkbox, Flex, Heading, Icon, IconButton, Link, Spinner, Table, Tbody, Td, Text, Th, Thead, Tooltip, Tr, useBreakpointValue, useToast } from "@chakra-ui/react";
+import { Box, Button, Checkbox, Flex, Heading, HStack, Icon, IconButton, Link, Spinner, Table, Tbody, Td, Text, Th, Thead, Tooltip, Tr, useBreakpointValue, useToast } from "@chakra-ui/react";
 import { RiAddLine, RiPencilFill, RiDeleteBin2Fill } from "react-icons/ri";
 import { format } from "date-fns";
 import { Header } from "../../components/Header";
@@ -163,29 +163,31 @@ export default function UserList({ token }) {
                         { isWideVersion && <Td>{user?.role}</Td> }
                         { isWideVersion && <Td>{user?.created_at}</Td> }
                         <Td>
-                          <Tooltip hasArrow label='Editar Usuário' placement='top'>
-                            <NextLink href={`/users/update/${user.id}`} passHref>
+                          <HStack>
+                            <Tooltip hasArrow label='Editar Usuário' placement='top'>
+                              <NextLink href={`/users/update/${user.id}`} passHref>
                                 <IconButton
                                   colorScheme='teal'
                                   aria-label='edit'
-                                  size='md'
-                                  fontSize="xl"
+                                  size='sm'
+                                  fontSize="lg"
                                   ml='2'
                                   icon={<RiPencilFill />}
                                 />
-                            </NextLink>
-                          </Tooltip>
+                              </NextLink>
+                            </Tooltip>
                             <Tooltip hasArrow label='Deletar Usuário' placement='top'>
                               <IconButton
                                 colorScheme='pink'
                                 onClick={() =>handleDeleteUser(user.id)}
                                 aria-label='delete'
-                                size='md'
-                                fontSize="xl"
+                                size='sm'
+                                fontSize="lg"
                                 ml='2'
                                 icon={<RiDeleteBin2Fill />}
                               />
                             </Tooltip>
+                          </HStack>
                         </Td>
 
                       </Tr>
