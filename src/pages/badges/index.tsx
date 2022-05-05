@@ -1,5 +1,5 @@
 import NextLink from "next/link";
-import { Box, Button, Checkbox, Flex, Heading, HStack, Icon, IconButton, Link, Spinner, Table, Tbody, Td, Text, Th, Thead, Tooltip, Tr, useBreakpointValue, useToast } from "@chakra-ui/react";
+import { Avatar, Box, Button, Checkbox, Flex, Heading, HStack, Icon, IconButton, Link, Spinner, Table, Tbody, Td, Text, Th, Thead, Tooltip, Tr, useBreakpointValue, useToast } from "@chakra-ui/react";
 import { RiAddLine, RiPencilFill, RiDeleteBin2Fill } from "react-icons/ri";
 import { format } from "date-fns";
 import { Header } from "../../components/Header";
@@ -15,7 +15,7 @@ import useSWR from 'swr';
 import { gql } from 'graphql-request';
 
 import { getAuthCookie } from '../../utils/auth-cookies';
-import { useQuery } from "react-query";
+import { useQuery, RefetchOptions, focusManager } from "react-query";
 import players from "../api/players";
 import { Badge } from "../../components/Badge";
 
@@ -53,7 +53,8 @@ export default function UserList({ token }) {
       };
     })
     return badges.sort((a,b) => (a.title > b.title) ? 1 : -1);
-  })
+  },
+)
 
   
   
@@ -71,15 +72,20 @@ export default function UserList({ token }) {
   function handleDeleteBadge(badge_id:string) {
 
     try {
-      api.delete(`/badge/delete/${badge_id}`)
+      api.delete(`/badges/delete/${badge_id}`).then(
+        () => {
+          focusManager.setFocused(true)
+          toast({
+            title: "Conquista excluída com sucesso",
+            status: "success",
+            position:"top-right",
+            duration: 3000,
+            isClosable: true,
+          })
+        }
+      )
 
-      toast({
-        title: "Conquista excluída com sucesso",
-        status: "success",
-        position:"top-right",
-        duration: 3000,
-        isClosable: true,
-      })
+
     } catch (error) {
       toast({
         title: `Erro na exclusão da conquista`,
@@ -143,7 +149,7 @@ export default function UserList({ token }) {
                           <Checkbox colorScheme="pink" />
                         </Td>
                         <Td>
-                          <Badge key={badge?.title} title={badge?.title} stars={badge?.stars}  />
+                          <Avatar name={badge?.title} src={`/badges/${badge?.title}.png`}/>
                         </Td>
                         <Td>{badge?.title}</Td>
                         <Td>{badge?.score}</Td>

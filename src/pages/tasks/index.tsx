@@ -15,7 +15,7 @@ import useSWR from 'swr';
 import { gql } from 'graphql-request';
 
 import { getAuthCookie } from '../../utils/auth-cookies';
-import { useQuery } from "react-query";
+import { focusManager, useQuery } from "react-query";
 import players from "../api/players";
 
 
@@ -64,15 +64,20 @@ export default function TaskList({ token }) {
   function handleDeleteTask(task_id:string) {
 
     try {
-      api.delete(`/task/delete/${task_id}`)
+      api.delete(`/task/delete/${task_id}`).then(
+        () => {
+          focusManager.setFocused(true)
+          toast({
+            title: "Entrega excluída com sucesso",
+            status: "success",
+            position:"top-right",
+            duration: 3000,
+            isClosable: true,
+          })
+        }
+      )
 
-      toast({
-        title: "Entrega excluída com sucesso",
-        status: "success",
-        position:"top-right",
-        duration: 3000,
-        isClosable: true,
-      })
+      
     } catch (error) {
       toast({
         title: `Erro na exclusão da entrega`,

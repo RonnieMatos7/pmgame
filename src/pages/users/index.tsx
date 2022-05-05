@@ -15,7 +15,7 @@ import useSWR from 'swr';
 import { gql } from 'graphql-request';
 
 import { getAuthCookie } from '../../utils/auth-cookies';
-import { useQuery } from "react-query";
+import { focusManager, useQuery } from "react-query";
 import players from "../api/players";
 
 interface User {
@@ -80,15 +80,20 @@ export default function UserList({ token }) {
   function handleDeleteUser(user_id:string) {
 
     try {
-      api.delete(`/user/delete/${user_id}`)
+      api.delete(`/user/delete/${user_id}`).then(
+        () => {
+          focusManager.setFocused(true)
+          toast({
+            title: "Usuário excluído com sucesso",
+            status: "success",
+            position:"top-right",
+            duration: 3000,
+            isClosable: true,
+          })
+        }
+      )
 
-      toast({
-        title: "Usuário excluído com sucesso",
-        status: "success",
-        position:"top-right",
-        duration: 3000,
-        isClosable: true,
-      })
+
     } catch (error) {
       toast({
         title: `Erro na exclusão do usuário`,

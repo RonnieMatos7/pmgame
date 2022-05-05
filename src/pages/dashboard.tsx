@@ -1,9 +1,11 @@
 import { Avatar, Badge, Box, Center, Divider, Flex, HStack, SimpleGrid, Text, theme, VStack } from "@chakra-ui/react";
 import dynamic from 'next/dynamic';
+import { useQuery } from "react-query";
 import { DepartmentAvatar } from "../components/DepartmentAvatar";
 import { Header } from "../components/Header";
 import { PlayerAvatar } from "../components/PlayerAvatar";
 import { Sidebar } from "../components/Sidebar";
+import { api } from "../services/api";
 import { getAuthCookie } from "../utils/auth-cookies";
 
 /* const Chart = dynamic(() => import('react-apexcharts'), {
@@ -63,6 +65,25 @@ const series = [
 ] */
 
 export default function Dashboard() {
+
+  const { data, isLoading, error} = useQuery('players', async () => {
+    const response = await api.get('/players')
+    
+    const players = response.data?.map(player => {
+      return {
+        id: player['ref']['@ref'].id,
+        name: player.data.name,
+        department: player.data.department,
+        role: player.data.role,
+        email: player.data.email,
+        score: player.data.score,
+        created_at: player.data.created_at,//format(player.data.created_at, 'dd/MM/yyyy'),
+        image_url: player.data.image_url,
+      };
+    })
+    return players.sort((a,b) => (a.name > b.name) ? 1 : -1);
+  })
+  
   return (
     <Flex direction="column" h="100vh">
       <Header />
@@ -123,41 +144,24 @@ export default function Dashboard() {
           >
             <Text fontSize="lg" mb="4">Top Gerentes de Projetos</Text>
             {/* <Chart options={options} series={series} type="area" height={160} /> */}
-            <PlayerAvatar
-              name="João Abobrinha"
-              department="DCMD"
-              score={1000}
-              position={1}
-              color="yellow"
-              avatar
-            />
-            <Divider orientation='horizontal' />
-            <PlayerAvatar
-              name="João Abobrinha"
-              department="DCMD"
-              score={1000}
-              position={2}
-              color="gray"
-              avatar
-            />
-                        <Divider orientation='horizontal' />
-            <PlayerAvatar
-              name="João Abobrinha"
-              department="DCMD"
-              score={1000}
-              position={3}
-              color="orange"
-              avatar
-            />
-                        <Divider orientation='horizontal' />
-            <PlayerAvatar
-              name="João Abobrinha"
-              department="DCMD"
-              score={1000}
-              position={4}
-              color="white"
-              avatar
-            />
+
+            {data?.map(player => {
+              return (
+                <>
+                  <PlayerAvatar
+                    name={player.name}
+                    department={player.department}
+                    score={player.score}
+                    position={player.position}
+                    color={player.color}
+                    avatar
+                    />
+                  <Divider orientation='horizontal' />
+                </>
+              )
+
+            })}
+            
           </Box>
         </SimpleGrid>
       </Flex>

@@ -24,7 +24,7 @@ export default async (req: NextApiRequest, res: NextApiResponse<Badge[] | any >)
   if(req.method === 'POST'){
 
     
-    const { title, description, stars, score, created_at } = req.body.badge;
+    const { title, description, score, created_at } = req.body.badge;
     
     
     try {
@@ -33,7 +33,6 @@ export default async (req: NextApiRequest, res: NextApiResponse<Badge[] | any >)
           data: {
             title,
             score,
-            stars,
             description,
             created_at,
           },

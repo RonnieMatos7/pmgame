@@ -15,7 +15,7 @@ import useSWR from 'swr';
 import { gql } from 'graphql-request';
 
 import { getAuthCookie } from '../../utils/auth-cookies';
-import { useQuery } from "react-query";
+import { focusManager, useQuery } from "react-query";
 import players from "../api/players";
 
 interface User {
@@ -76,15 +76,20 @@ export default function UserList({ token }) {
   function handleDeleteUser(reward_id:string) {
 
     try {
-      api.delete(`/reward/delete/${reward_id}`)
+      api.delete(`/reward/delete/${reward_id}`).then(
+        () => {
+          focusManager.setFocused(true)
+          toast({
+            title: "Recompensa excluída com sucesso",
+            status: "success",
+            position:"top-right",
+            duration: 3000,
+            isClosable: true,
+          })
+        }
+      )
 
-      toast({
-        title: "Recompensa excluída com sucesso",
-        status: "success",
-        position:"top-right",
-        duration: 3000,
-        isClosable: true,
-      })
+      
     } catch (error) {
       toast({
         title: `Erro na exclusão da recompensa`,

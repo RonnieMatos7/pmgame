@@ -28,7 +28,7 @@ export default async (req: NextApiRequest, res: NextApiResponse<Badge |any >) =>
       
     const {query: { id },} = req;
 
-    const { title, score, stars, description, updated_at } = req.body.badge;
+    const { title, score, description, updated_at } = req.body.badge;
     
     try {
       const updateBadge = await authClient(process.env.FAUNA_GUEST_SECRET).query<Badge | any>(
@@ -39,7 +39,6 @@ export default async (req: NextApiRequest, res: NextApiResponse<Badge |any >) =>
                 data: {
                   title,
                   score,
-                  stars,
                   description,
                   updated_at
                 },

@@ -22,7 +22,6 @@ type CreateBadgeFormData = {
 
 const createUserFormSchema = yup.object().shape({
   title: yup.string().required('Nome obrigatório'),
-  score: yup.number().required('Pontuação obrigatória'),
   description: yup.number().required('Descrição obrigatória'),
   icon: yup.number().required('Icone obrigatório'),
 })
@@ -106,13 +105,6 @@ export default function UpdateUser() {
                 defaultValue={data?.description}
                 error={errors.description}
                 {...register('description')}
-              />
-              <Input
-                name="icon"
-                label="Icone"
-                defaultValue={data?.icon}
-                error={errors.icon}
-                {...register('icon')}
               />
             </SimpleGrid>
 

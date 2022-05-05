@@ -30,7 +30,7 @@ export default async (req: NextApiRequest, res: NextApiResponse<Player[] | any >
           q.Paginate(
             q.Match(
               q.Index('all_players'),
-              'player'
+              'Jogador'
             )
           ),
           q.Lambda("X",

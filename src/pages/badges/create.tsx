@@ -92,12 +92,6 @@ export default function CreateReward() {
                 error={errors.description}
                 {...register('description')}
               />
-              <Input
-                name="stars"
-                label="Estrelas"
-                error={errors.stars}
-                {...register('stars')}
-              />
                
             </SimpleGrid>
 

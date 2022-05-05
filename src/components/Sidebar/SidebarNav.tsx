@@ -1,5 +1,5 @@
 import { Stack } from "@chakra-ui/react";
-import { RiContactsLine, RiDashboardLine, RiFileList3Line, RiGift2Line, RiGitMergeLine, RiInputMethodLine, RiMedalLine } from "react-icons/ri"
+import { RiBarChart2Line, RiContactsLine, RiDashboardLine, RiFileList3Line, RiFolderUserLine, RiGift2Line, RiGitMergeLine, RiInputMethodLine, RiMailSendLine, RiMailUnreadLine, RiMedalLine } from "react-icons/ri"
 ;
 import useSWR from "swr";
 import { NavLink } from "./NavLink";
@@ -19,10 +19,12 @@ const { data: user, mutate: mutateUser } = useSWR('/api/user', fetcher);
         {user?.role == 'pmo' && <NavLink icon={RiGift2Line} href="/rewards">Recompensas</NavLink>}
         {user?.role == 'pmo' && <NavLink icon={RiMedalLine} href="/badges">Conquistas</NavLink>}
         {user?.role == 'pmo' && <NavLink icon={RiFileList3Line} href="/tasks">Entregas</NavLink>}
+        {user?.role == 'pmo' && <NavLink icon={RiMailUnreadLine} href="/tasks">Solicitações</NavLink>}
       </NavSection>
-      <NavSection title="AUTOMAÇÃO">
-        <NavLink icon={RiInputMethodLine} href="/forms">Formulários</NavLink>
-        <NavLink icon={RiGitMergeLine} href="/automation">Automação</NavLink>
+      <NavSection title="MEU ESPAÇO">
+        <NavLink icon={RiBarChart2Line} href="/performance">Desempenho</NavLink>
+        <NavLink icon={RiFolderUserLine} href="/profile">Meu perfil</NavLink>
+        <NavLink icon={RiMailSendLine} href="/solicitations">Minhas Solicitações</NavLink>
       </NavSection>
     </Stack>
   );
