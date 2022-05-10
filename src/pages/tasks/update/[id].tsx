@@ -23,8 +23,8 @@ type CreateTaskFormData = {
 const createUserFormSchema = yup.object().shape({
   title: yup.string().required('Nome obrigatório'),
   score: yup.number().required('Pontuação obrigatória'),
-  description: yup.number().required('Descriçao obrigatória'),
-  frequency: yup.number().required('Periodicidade obrigatória'),
+  description: yup.string().required('Descriçao obrigatória'),
+  frequency: yup.string().required('Periodicidade obrigatória'),
 })
 
 export default function UpdateUser() {
@@ -33,7 +33,7 @@ export default function UpdateUser() {
   
 
   const { data, isLoading, error} = useQuery('task', async () => {
-    const response = await api.get(`/task/get/${id}`)
+    const response = await api.get(`/tasks/get/${id}`)
     const task = response.data
     return task;
   })
@@ -41,7 +41,7 @@ export default function UpdateUser() {
   
 
   const updateTask = useMutation(async (task: CreateTaskFormData) => {
-    const response = await api.put(`task/update/${id}`, {
+    const response = await api.put(`tasks/update/${id}`, {
       task: {
         ...task,
         updated_at: format(new Date(), 'dd/MM/yyyy'),
@@ -80,7 +80,7 @@ export default function UpdateUser() {
           p={["6", "8"]}
           onSubmit={handleSubmit(handleUpdateReward)}
         >
-          <Heading size="lg" fontWeight="normal">Atualizar Recompensa</Heading>
+          <Heading size="lg" fontWeight="normal">Atualizar Entrega</Heading>
 
           <Divider my="6" borderColor="gray.700" />
 
@@ -122,7 +122,7 @@ export default function UpdateUser() {
 
           <Flex mt="8" justify="flex-end">
             <HStack spacing="4">
-              <Link href="/users" passHref>
+              <Link href="/tasks" passHref>
                 <Button as="a" colorScheme="whiteAlpha">Cancelar</Button>
               </Link>
               <Button

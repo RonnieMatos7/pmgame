@@ -29,22 +29,16 @@ export default async (req: NextApiRequest, res: NextApiResponse<Player |any >) =
       
     const {query: { id },} = req;
 
-    const { name, role, department, image_url, updated_at } = req.body.user;
+    const { password } = req.body.user;
     
     try {
       const updateUser = await authClient(process.env.FAUNA_GUEST_SECRET).query<Player>(
         q.Update(
           q.Ref(
             q.Collection('User'), id),
-              {
-                data: {
-                  name,
-                  role,
-                  department,
-                  image_url,
-                  updated_at
-                },
-              },
+            {
+              credentials: { password },
+            },
           )
       );
 

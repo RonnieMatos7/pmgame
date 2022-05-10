@@ -6,15 +6,18 @@ import Link from "next/link";
 import { useRouter } from "next/router";
 import { useMutation, useQuery } from 'react-query'
 
-import { Input } from "../../../components/Form/Input";
-import { Header } from "../../../components/Header";
-import { Sidebar } from "../../../components/Sidebar";
-import { api } from "../../../services/api";
-import { queryClient } from "../../../services/queryClient";
+import { Input } from "../../components/Form/Input";
+import { Header } from "../../components/Header";
+import { Sidebar } from "../../components/Sidebar";
+import { api } from "../../services/api";
+import { queryClient } from "../../services/queryClient";
+import useSWR from "swr";
+import { getAuthCookie } from "../../utils/auth-cookies";
 
 type CreateUserFormData = {
   name: string;
   email: string;
+  id: string;
   role:string;
   department:string;
   image_url:string;
@@ -25,25 +28,22 @@ type CreateUserFormData = {
 const createUserFormSchema = yup.object().shape({
   name: yup.string().required('Nome obrigatório'),
   email: yup.string().required('E-mail obrigatório').email('E-mail inválido'),
-  role: yup.string().required('Perfil obrigatório'),
+  /* role: yup.string().required('Perfil obrigatório').oneOf(['Jogador', 'PMO']), */
   department: yup.string().required('Departamento obrigatório')
 })
 
 export default function UpdateUser() {
   const router = useRouter()
-  const {id} = router.query
+  
   
 
-  const { data, isLoading, error} = useQuery('user', async () => {
-    const response = await api.get(`/user/get/${id}`)
-    const user = response.data
-    return user;
-  })
-  
+  const fetcher = (url) => fetch(url).then((r) => r.json());
+
+  const { data: userData, mutate: mutateUser } = useSWR('/api/user', fetcher);
   
 
   const updateUser = useMutation(async (user: CreateUserFormData) => {
-    const response = await api.put(`user/update/${id}`, {
+    const response = await api.put(`user/reset-password/${userData.id}`, {
       user: {
         ...user,
         updated_at: new Date(),
@@ -82,68 +82,37 @@ export default function UpdateUser() {
           p={["6", "8"]}
           onSubmit={handleSubmit(handleUpdateUser)}
         >
-          <Heading size="lg" fontWeight="normal">Atualizar Cadastro</Heading>
+          <Heading size="lg" fontWeight="normal">Alterar Senha</Heading>
 
           <Divider my="6" borderColor="gray.700" />
 
           <VStack spacing="8">
+            
             <SimpleGrid minChildWidth="240px" spacing={["6", "8"]} w="100%">
               <Input
-                name="name"
-                label="Nome completo"
-                defaultValue={data?.name}
-                error={errors.name}
-                {...register('name')}
+                name="password"
+                type="password"
+                label="Senha"
+                defaultValue={userData?.password}
+                error={errors.password}
+                {...register('password')}
               />
               <Input
-                name="email"
-                type="email"
-                label="E-mail"
-                defaultValue={data?.email}
-                error={errors.email}
-                {...register('email')}
-              />
-               <Input
-                name="department"
-                label="Departamento"
-                defaultValue={data?.department}
-                error={errors.name}
-                {...register('department')}
-              />
-              <Box>
-                <Text fontWeight='medium'>Perfil do Usuário</Text>
-                <Select
-                 mt='3'
-                  name="role"
-                  label="Perfil do Usuário"
-                  error={errors.name}
-                  {...register('role')}
-                >
-                  <option key={'Jogador'} value={'Jogador'}>Jogador</option>  
-                  <option key={'PMO'} value={'PMO'}>PMO</option>
-                </Select>
-              </Box>
-              <Input
-                name="image_url"
-                label="Link Imagem de Perfil"
-                defaultValue={data?.image_url}
-                error={errors.name}
-                {...register('image_url')}
+                name="password_confirmation"
+                type="password"
+                label="Confirmação da senha"
+                defaultValue={userData?.password}
+                error={errors.password_confirmation}
+                {...register('password_confirmation')}
               />
             </SimpleGrid>
-
-            
-
             
           </VStack>
 
           <Flex mt="8" justify="flex-end">
             <HStack spacing="4">
-              <Link href={`/users/update/reset-password/${id}`} passHref>
-                <Button as="a" colorScheme="facebook">Resetar Senha</Button>
-              </Link>
-              <Link href="/users" passHref>
-                <Button as="a" colorScheme="facebook">Cancelar</Button>
+              <Link href="/profile" passHref>
+                <Button as="a" colorScheme="whiteAlpha">Cancelar</Button>
               </Link>
               <Button
                 type="submit"
@@ -158,4 +127,15 @@ export default function UpdateUser() {
       </Flex>
     </Box>
   );
+}
+
+export async function getServerSideProps({res, req, params}) {
+  const token = getAuthCookie(req);
+  if(!token){
+    res.setHeader("location", "/");
+    res.statusCode = 302;
+    res.end();
+  }
+  
+  return { props: { token: token || null } };
 }

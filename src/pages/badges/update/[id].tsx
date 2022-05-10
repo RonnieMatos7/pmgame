@@ -113,7 +113,7 @@ export default function UpdateUser() {
 
           <Flex mt="8" justify="flex-end">
             <HStack spacing="4">
-              <Link href="/users" passHref>
+              <Link href="/badges" passHref>
                 <Button as="a" colorScheme="whiteAlpha">Cancelar</Button>
               </Link>
               <Button
