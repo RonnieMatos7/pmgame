@@ -24,7 +24,7 @@ type Solicitation = {
 
 export default async (req: NextApiRequest, res: NextApiResponse<Solicitation[] | any >) => {
   if(req.method === 'POST'){
-    const { player, title, score, month, description, pmo_list } = req.body;
+    const { player, title, score, month, description, pmo_list, created_at } = req.body.solicitation.item;
 
     
     try {
@@ -35,8 +35,8 @@ export default async (req: NextApiRequest, res: NextApiResponse<Solicitation[] |
             title,
             score,
             month,
-            description,
-            status: 'Aguardando aprovação'
+            status: 'Aguardando aprovação',
+            created_at
           },
         })
       );
@@ -45,20 +45,20 @@ export default async (req: NextApiRequest, res: NextApiResponse<Solicitation[] |
       const date = new Date().toLocaleDateString("pt-BR")
 
       const emailSubject = `Nova solicitação de pontuação está aguardando aprovação`
-      const emailBody = `<strong>Olá, Wolgrand</strong>
+      const emailBody = `<strong>Olá, PMO</strong>
       
       <p>${name} solicitou em ${date} o registro da pontuação para a seguinte entrega: </p>
       <p>
         <strong>Entrega: </strong> ${title} <br />
         <strong>Pontuação: </strong> ${score} <br />
         <strong>Mês de Referência: </strong> ${month} <br />
-        <strong>Detalhamento: </strong> ${description} <br />
+
         <a href="https://game-asgp.vercel.app/solicitations/pending" >Clique aqui para visualizar</a>
         <br />
       </p>`
 
       sendEmail(
-        'project.office@energisa.com.br;wolgrand.lordao@energisa.com.br',
+        'project.office@energisa.com.br',
         emailSubject,
         emailBody
       )

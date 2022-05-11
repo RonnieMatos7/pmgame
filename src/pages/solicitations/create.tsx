@@ -1,4 +1,4 @@
-import { Box, Text, Button, Divider, Flex, Heading, HStack, Select, SimpleGrid, VStack, Avatar, Checkbox, Icon, Table, Tbody, Td, Th, Thead, Tooltip, Tr } from "@chakra-ui/react";
+import { Box, Text, Button, Divider, Flex, Heading, HStack, Select, SimpleGrid, VStack, Avatar, Checkbox, Icon, Table, Tbody, Td, Th, Thead, Tooltip, Tr, NumberDecrementStepper, NumberIncrementStepper, NumberInput, NumberInputField, NumberInputStepper } from "@chakra-ui/react";
 import { SubmitHandler, useForm } from 'react-hook-form'
 import * as yup from 'yup';
 import { yupResolver } from '@hookform/resolvers/yup'
@@ -13,7 +13,7 @@ import { api } from "../../services/api";
 import { queryClient } from "../../services/queryClient";
 import { format } from "date-fns";
 import useSWR from "swr";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { RiAddLine, RiCheckFill, RiCloseFill, RiDeleteBin2Line, RiFileAddLine } from "react-icons/ri";
 
 
@@ -31,8 +31,21 @@ type CreateSolicitationFormData = {
   status: string
 };
 
+type PlayerProps ={
+  id: string,
+  name: string,
+  email: string,
+  image_url: string
+}
+
 type ShopCartProps = {
   id: string,
+  player: {
+    id: string,
+    name: string,
+    email: string,
+    image_url: string
+  },
   task_id: string,
   title: string,
   score: number,
@@ -44,7 +57,7 @@ type TaskProps = {
   id: string,
   title: string,
   score: number,
-  created_at: string
+  created_at?: string
 }
 
 const createUserFormSchema = yup.object().shape({
@@ -52,25 +65,33 @@ const createUserFormSchema = yup.object().shape({
   month: yup.string().required('Selecione o mês de referência'),
 })
 
-function guidGenerator() {
+/* function guidGenerator() {
   var S4 = function() {
      return (((1+Math.random())*0x10000)|0).toString(16).substring(1);
   };
   return (S4()+S4()+"-"+S4()+"-"+S4()+"-"+S4()+"-"+S4()+S4()+S4());
-}
+} */
 
-export default function CreateReward() {
+
+
+export default function CreateSolicitation() {
+  
+  
+  
   const router = useRouter()
 
   const [total, setTotal] = useState<number>(0)
   const [shopCart, setShopCart] = useState<ShopCartProps[]>([])
   const [taskSelected, setTaskSelected] = useState('')
+  const [selectedPlayer, setSelectedPlayer] = useState('')
   const [monthSelected, setMonthSelected] = useState('')
 
+
+
   const fetcher = (url) => fetch(url).then((r) => r.json());
-  const { data: player, mutate: mutateUser } = useSWR('/api/user', fetcher);
+  const { data: user, mutate: mutateUser } = useSWR('/api/user', fetcher);
   
-  const { data, isLoading, error} = useQuery('tasks', async () => {
+  const { data:tasks, isLoading:isLoadingTasks, error:errorTasks} = useQuery('tasks', async () => {
     const response = await api.get('/tasks/getAll')
     
     const tasks = response.data?.map(task => {
@@ -86,13 +107,33 @@ export default function CreateReward() {
     return tasks.sort((a,b) => (a.title > b.title) ? 1 : -1);
   })
 
+  const { data:players, isLoading, error} = useQuery('players', async () => {
+    const response = await api.get('/players')
+    
+    const players = response.data?.map(player => {
+      return {
+        id: player['ref']['@ref'].id,
+        name: player.data.name,
+        department: player.data.department,
+        role: player.data.role,
+        email: player.data.email,
+        score: player.data.score,
+        created_at: player.data.created_at,//format(player.data.created_at, 'dd/MM/yyyy'),
+        image_url: player.data.image_url,
+      };
+    })
+    return players.sort((a,b) => (a.name > b.name) ? 1 : -1);
+  })
+
+
+  
 
 
   const createSolicitation = useMutation(async (solicitation: CreateSolicitationFormData) => {
     const response = await api.post('solicitations/createSolicitation', {
       solicitation: {
         ...solicitation,
-        player, 
+        selectedPlayer, 
         created_at: format(new Date(), 'dd/MM/yyyy'),
       }
     })
@@ -109,24 +150,39 @@ export default function CreateReward() {
   })
 
   function handleDeleteShopCartItem(id:string, score:number){
+    
+    console.log({
+      id,
+      score
+    })
     const dados = shopCart
     const subtotal = total - score
     setTotal(subtotal)
     var filteredData = dados.filter(e => e.id !== id)
     setShopCart(filteredData)
   } 
+  
 
-  async function handleAdditem(){
-    let task = data.filter(x => x.id !== taskSelected)
-    const id = guidGenerator()
-    const subtotal = total + task[0]?.score
-    setTotal(subtotal)
-    task[0].month = monthSelected
-    task[0].task_id = task[0]?.id
-    task[0].id = guidGenerator()
-    task[0].created_at = format(new Date(), 'dd/MM/yyyy')
-    setShopCart([...shopCart, task[0]])
-    console.log(shopCart)
+  async function handleAdditem(id:any){
+    let task = await tasks.filter(x => x.id === taskSelected)
+    let player = await players.filter(x => x.id === selectedPlayer)[0]
+    console.log({task, player})
+    let subtotal = 0
+    if(task[0]){
+          subtotal = total + task[0].score
+          setTotal(subtotal)
+          const newItem = {
+            player,
+            title: task[0].title,
+            score: task[0].score,
+            month: monthSelected,
+            task_id:task[0]?.id,
+            id,
+            created_at: format(new Date(), 'dd/MM/yyyy')
+          }
+          setShopCart((t) => [...t, newItem]);
+        }
+      
   }
 
   const handleCreateSolicitation: SubmitHandler<CreateSolicitationFormData> = async (values) => {
@@ -134,9 +190,26 @@ export default function CreateReward() {
 
     router.push(`\solicitations`)
   }
-  const handleAddSolicitationItem: SubmitHandler<ShopCartProps> = async (values) => {
 
+  
+  const handleAddSolicitationItem = async () => {
+    try {
+      shopCart.map(async item=>{
+        console.log(item)
+        const response = await api.post('solicitations/createSolicitation', {
+          solicitation: {
+            item, 
+            created_at: format(new Date(), 'dd/MM/yyyy')
+          }
+        })})
+        router.push('/solicitations')
+    } catch (error) {
+      console.log(error)
+    }
   }
+
+
+  
 
   return (
     <Box>
@@ -166,8 +239,8 @@ export default function CreateReward() {
 
           <Divider my="6" borderColor="gray.700" />
 
-          <VStack spacing="8" onSubmit={handleSubmit(handleAddSolicitationItem)}>
-            <SimpleGrid minChildWidth="240px" flex={'1'} spacing={["6", "8"]} w="100%"
+          <VStack spacing="8" onSubmit={()=>handleAddSolicitationItem()}>
+            <SimpleGrid minChildWidth="240px" flex={'1'} spacing={["4", "6"]} w="100%"
             
             >
               <Box>
@@ -175,7 +248,7 @@ export default function CreateReward() {
                 <Select
                  mt='3'
                   name="month"
-                  onChange={e=>setMonthSelected(e.target.value)}
+                  onChange={e=> setMonthSelected(e.target.value)}
                   label="Mês de Referência"
                   error={errors.month}
                 >
@@ -190,23 +263,42 @@ export default function CreateReward() {
                 </Select>
               </Box>
               
-            </SimpleGrid>
-            <SimpleGrid minChildWidth="96px" flex={'1'} spacing={["6", "8"]} w="100%"
-            
-            >
             
               <Box>
-                <Text fontWeight='medium'>Entrega</Text>
-                <SimpleGrid spacing={'2'} columns={[1,2,3]} >
-                  {data?.map(item => (
-                      <Button key={item.id} w='auto' p='4' colorScheme={taskSelected === item.title ? 'green' : 'gray'} onClick={() => setTaskSelected(item.title)}>{item.title}</Button>  
-                    ))}
-                </SimpleGrid>
+                <Text fontWeight='medium'>Jogador</Text>
+                  <Select
+                    mt='3'
+                    name="player"
+                    onChange={(e => setSelectedPlayer(e.target.value))}
+                    label="Jogador"
+                    error={errors.player}
+                  >
+                    <option key={'SelecionePlayer'} value={0}>Selecione o Jogador</option> 
+                    {players?.map(item => (
+                        <option key={item?.name} value={item?.id}>{item?.name}</option> 
+                      ))}
+
+                  </Select>
               </Box>
-            </SimpleGrid>
-            <SimpleGrid minChildWidth="240px" flex={'1'} spacing={["6", "8"]} w="100%"
-            
-            >
+              <Box>
+                <Text fontWeight='medium'>Entrega</Text>
+                  <Select
+                    mt='3'
+                    name="task"
+                    onChange={(e => setTaskSelected(e.target.value))}
+                    label="Entrega"
+                    error={errors.task}
+                  >
+                    <option key={'SelecioneTask'} value={0}>Selecione a Entrega</option> 
+                    {tasks?.map(item => (
+                        <option key={item?.title} value={item?.id}>{item?.title}</option> 
+                      ))}
+
+                  </Select>
+              </Box>
+              
+
+
             
               
               <Box mx='0' my={"auto"} pt={10} justifyContent='flex-end'>
@@ -218,13 +310,14 @@ export default function CreateReward() {
                     fontSize="sm"
                     colorScheme="teal"
                     shadow="md"
-                    onClick={async ()=>await handleAdditem()}
-                  >
+                    onClick={async ()=>await handleAdditem(new Date().getMilliseconds())}
+                    >
                     <Icon as={RiAddLine} fontSize="16"/>
                   </Button>
                 </Tooltip>
               </Box>
             </SimpleGrid>
+
           <Divider my="6" borderColor="gray.700" />
           <Table colorScheme="whiteAlpha">
                 <Thead>
@@ -232,6 +325,7 @@ export default function CreateReward() {
                     <Th px={["4", "4", "6"]} color="gray.300" width="8">
                       <Checkbox colorScheme="pink" />
                     </Th>
+                    <Th>Jogador</Th>
                     <Th>Titulo</Th>
                     <Th>Pontuação</Th>
                     <Th>Mês</Th>
@@ -241,10 +335,11 @@ export default function CreateReward() {
                 <Tbody>
                   {shopCart?.map(solicitation => {
                     return (
-                      <Tr key={solicitation.id}>
+                      <Tr key={solicitation?.id}>
                         <Td px={["4", "4", "6"]}>
                           <Checkbox colorScheme="pink" />
                         </Td>
+                        <Td>{solicitation?.player.name}</Td>
                         <Td>{solicitation?.title}</Td>
                         <Td>{solicitation?.score}</Td>
                         <Td>{solicitation?.month}</Td>
@@ -279,7 +374,7 @@ export default function CreateReward() {
                 <Button as="a" colorScheme="whiteAlpha">Cancelar</Button>
               </Link>
               <Button
-                type="submit"
+                onClick={()=>handleAddSolicitationItem()}
                 colorScheme="pink"
                 isLoading={isSubmitting}
               >

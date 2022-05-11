@@ -148,7 +148,7 @@ export default function UserList({ token }) {
                           <Checkbox colorScheme="pink" />
                         </Td>
                         <Td>
-                          <Avatar name={solicitation?.title} src={`/solicitations/${solicitation?.title}.png`}/>
+                          <Avatar name={solicitation?.player?.name} src={`/solicitations/${solicitation?.title}.png`}/>
                         </Td>
                         <Td>{solicitation?.title}</Td>
                         <Td>{solicitation?.score}</Td>
