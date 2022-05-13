@@ -2,6 +2,7 @@ import { NextApiRequest, NextApiResponse } from "next";
 import { query as q } from 'faunadb';
 import { authClient, guestClient } from "../../../utils/fauna-client";
 import { getAuthCookie } from "../../../utils/auth-cookies";
+import { format } from "date-fns";
 
 
 type Player = {
@@ -11,7 +12,7 @@ type Player = {
   image_url: string,
   department: string,
   password: string,
-  created_at: Date
+  created_at: string
   
 }
 
@@ -26,7 +27,7 @@ export default async (req: NextApiRequest, res: NextApiResponse<Player[] | any >
 
     
     const { name, email, role, department, image_url, password, created_at } = req.body.user;
-    
+    const lowerCaseEmail = email.toLowerCase();
     
     try {
       const createUser = await authClient(process.env.FAUNA_GUEST_SECRET).query<Player>(
@@ -35,10 +36,16 @@ export default async (req: NextApiRequest, res: NextApiResponse<Player[] | any >
           data: {
             name,
             role,
-            email,
+            email: lowerCaseEmail,
             department,
             image_url,
-            created_at,
+            created_at:format(new Date(), 'dd/MM/yyyy'),
+            position: "",
+            score: 0,
+            old_position: "",
+            rewards: [],
+            tasks: [],
+            badges: [],
           },
         })
       );

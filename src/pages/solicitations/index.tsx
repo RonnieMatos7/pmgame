@@ -1,5 +1,5 @@
 import NextLink from "next/link";
-import { Avatar, Box, Button, Checkbox, Flex, Heading, HStack, Icon, IconButton, Table, Tbody, Td, Th, Thead, Tooltip, Tr, useToast } from "@chakra-ui/react";
+import { Avatar, Badge, Box, Button, Checkbox, Flex, Heading, HStack, Icon, IconButton, Table, Tbody, Td, Text, Th, Thead, Tooltip, Tr, useToast } from "@chakra-ui/react";
 import { RiAddLine, RiPencilFill, RiDeleteBin2Fill, RiCheckFill, RiCloseFill } from "react-icons/ri";
 import { Header } from "../../components/Header";
 import { Sidebar } from "../../components/Sidebar";
@@ -7,6 +7,8 @@ import { api } from "../../services/api";
 
 import { getAuthCookie } from '../../utils/auth-cookies';
 import { useQuery, focusManager } from "react-query";
+import useSWR from "swr";
+import { format } from "date-fns";
 
 type Solicitation = {
   id: string,
@@ -14,6 +16,10 @@ type Solicitation = {
   score: number,
   month: string,
   status: string,
+  approval_data: {
+    approvedBy: string,
+    approvedDate: string
+  },
   description: string,
   player: {
     id: string
@@ -24,8 +30,12 @@ type Solicitation = {
 }
 
 
-export default function UserList({ token }) {
+export default function SolicitationList({ token }) {
   const toast = useToast()
+
+  const fetcher = (url) => fetch(url).then((r) => r.json());
+
+  const { data: user, mutate: mutateUser } = useSWR('/api/user', fetcher);
   
   const { data, isLoading, error} = useQuery('solicitation', async () => {
     const response = await api.get('/solicitations/getAll')
@@ -36,11 +46,13 @@ export default function UserList({ token }) {
         player: solicitation.data.player,
         title: solicitation.data.title,
         score: solicitation.data.score,
+        month: solicitation.data.month,
+        status: solicitation.data.status,
         description: solicitation.data.description,
         created_at: solicitation.data.created_at,
       };
     })
-    return solicitations.sort((a,b) => (a.title > b.title) ? 1 : -1);
+    return solicitations.sort((a,b) => (a.created_at < b.created_at) ? 1 : -1);
   },
 )
 
@@ -63,7 +75,11 @@ export default function UserList({ token }) {
     try {
       api.put(`/solicitations/approval/${solicitation.id}`,
       {
-        status: "status"
+        status: status,
+        approval_data: {
+          approvedBy: user.name,
+          approvedDate: format(new Date(), 'dd/MM/yyyy')
+        }
       }
       ).then(
         () => {
@@ -77,8 +93,7 @@ export default function UserList({ token }) {
           })
           if(status === "Aprovada"){
             api.put(`/user/update-score/${solicitation.player.id}`, {
-              score: solicitation.score,
-              month: solicitation.month
+              task:solicitation
             })
           }
         }
@@ -136,7 +151,7 @@ export default function UserList({ token }) {
                     <Th>Imagem</Th>
                     <Th>Nome</Th>
                     <Th>Pontuação</Th>
-                    <Th>Criado em</Th>
+                    <Th>Referência</Th>
                     <Th>Ação</Th>
                   </Tr>
                 </Thead>
@@ -148,40 +163,51 @@ export default function UserList({ token }) {
                           <Checkbox colorScheme="pink" />
                         </Td>
                         <Td>
-                          <Avatar name={solicitation?.player?.name} src={`/solicitations/${solicitation?.title}.png`}/>
+                          <Avatar name={solicitation?.player?.name} src={solicitation?.player?.image_url}/>
                         </Td>
-                        <Td>{solicitation?.title}</Td>
-                        <Td>{solicitation?.score}</Td>
-                        <Td>{solicitation?.created_at}</Td>
                         <Td>
-                          <HStack>
-                            <Tooltip hasArrow label='Aprovar Solicitação' placement='top'>
-                              <Button
-                              as="a"
-                              size="sm"
-                              fontSize="sm"
-                              color="white"
-                              colorScheme="green"
-                              shadow="md"
-                              onClick={()=>handleSolicitationApproval(solicitation, 'Aprovada')}
-                            >
-                              <Icon as={RiCheckFill} fontSize="16"/>
-                            </Button>
-                            </Tooltip>
-                              <Tooltip hasArrow label='Reprovar Solicitação' placement='top'>
-                                <Button
-                                  as="a"
-                                  size="sm"
-                                  fontSize="sm"
-                                  color="white"
-                                  colorScheme="red"
-                                  shadow="md"
-                                  onClick={()=>handleSolicitationApproval(solicitation, 'Reprovada')}
-                                >
-                                  <Icon as={RiCloseFill} fontSize="16"/>
-                                </Button>
-                              </Tooltip>
-                          </HStack>
+                          <Box>
+                            <Text fontWeight="bold">{solicitation?.title}</Text>
+                            <Text fontSize="sm" color="gray.300">{solicitation?.status} por {solicitation?.approval_data} em {solicitation?.approval_data?.approvedDate}</Text>
+                          </Box>
+                        </Td>
+                        <Td>{solicitation?.score}</Td>
+                        <Td>{solicitation?.month}</Td>
+                        <Td>
+                          {
+                            solicitation?.status === 'Aguardando aprovação'
+                              ?( <HStack>
+                                  <Tooltip hasArrow label='Aprovar Solicitação' placement='top'>
+                                    <Button
+                                    as="a"
+                                    size="sm"
+                                    fontSize="sm"
+                                    color="white"
+                                    colorScheme="green"
+                                    shadow="md"
+                                    onClick={()=>handleSolicitationApproval(solicitation, 'Aprovada')}
+                                  >
+                                    <Icon as={RiCheckFill} fontSize="16"/>
+                                  </Button>
+                                  </Tooltip>
+                                    <Tooltip hasArrow label='Reprovar Solicitação' placement='top'>
+                                      <Button
+                                        as="a"
+                                        size="sm"
+                                        fontSize="sm"
+                                        color="white"
+                                        colorScheme="red"
+                                        shadow="md"
+                                        onClick={()=>handleSolicitationApproval(solicitation, 'Reprovada')}
+                                      >
+                                        <Icon as={RiCloseFill} fontSize="16"/>
+                                      </Button>
+                                    </Tooltip>
+                                </HStack>
+                            )
+                            :
+                            (<Badge colorScheme={solicitation?.status === 'Reprovada' ? 'red' : 'green'}>{solicitation?.status}</Badge>)
+                          }
                         </Td>
 
                       </Tr>

@@ -24,7 +24,7 @@ const { data: user, mutate: mutateUser } = useSWR('/api/user', fetcher);
       <NavSection title="MEU ESPAÇO">
         <NavLink icon={RiBarChart2Line} href="/performance">Desempenho</NavLink>
         <NavLink icon={RiFolderUserLine} href="/profile">Meu perfil</NavLink>
-        <NavLink icon={RiMailSendLine} href="/solicitations">Minhas Solicitações</NavLink>
+        <NavLink icon={RiMailSendLine} href="/my-solicitations">Minhas Solicitações</NavLink>
       </NavSection>
     </Stack>
   );
