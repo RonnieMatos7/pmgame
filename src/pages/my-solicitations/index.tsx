@@ -185,7 +185,7 @@ export default function SolicitationList({ token }) {
                           <Td>{solicitation?.created_at}</Td>
                           <Td>
                             <Badge colorScheme={solicitation?.status === 'Reprovada' ? 'red' : solicitation?.status === 'Aprovada' ? 'green' : 'gray'}>{solicitation?.status}</Badge>
-                            <Text fontSize="sm" color="gray.300">Aprovado por {solicitation?.approval_data?.approvedBy} em {solicitation?.approval_data?.approvedDate}</Text>
+                            {solicitation?.status === 'Aguardando Aprovação' ? null :<Text fontSize="sm" color="gray.300">Aprovado por {solicitation?.approval_data?.approvedBy} em {solicitation?.approval_data?.approvedDate}</Text>}
                           </Td>
 
                         </Tr>

@@ -244,7 +244,7 @@ export default function CreateSolicitation() {
             created_at: format(new Date(), 'dd/MM/yyyy')
           }
         })})
-        router.push('/solicitations')
+        router.push('/my-solicitations')
     } catch (error) {
       console.log(error)
     }
@@ -260,7 +260,7 @@ export default function CreateSolicitation() {
             created_at: format(new Date(), 'dd/MM/yyyy')
           }
         })})
-        router.push('/solicitations')
+        router.push('/my-solicitations')
     } catch (error) {
       console.log(error)
     }
