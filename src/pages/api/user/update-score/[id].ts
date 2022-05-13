@@ -30,6 +30,7 @@ type Player = {
     image_url: string,
     score: number,
     tasks: [],
+    badges: [],
   }
 }
 
@@ -44,8 +45,8 @@ export default async (req: NextApiRequest, res: NextApiResponse<Player |any >) =
 
       
     const {query: { id },} = req;
-    const { score, month, title, created_at } = req.body.task;
-
+    const { score, month, title, created_at, type } = req.body.task;
+    console.log(type)
     
     try {
       const player = await authClient(process.env.FAUNA_GUEST_SECRET).query<Player>(
@@ -55,27 +56,46 @@ export default async (req: NextApiRequest, res: NextApiResponse<Player |any >) =
 
       const newScore = Number(player.data.score) + Number(score)
 
+      if(type === 'badge') {
+        const updateUser = await authClient(process.env.FAUNA_GUEST_SECRET).query<Player>(
+          q.Update(q.Ref(q.Collection('User'), id), {
+            data: {
+              score: newScore,
+              badges: [
+                ...player.data.badges,
+                {
+                  month,
+                  title,
+                  created_at,
+                  score
+                }
+              ],
+            },
+          })
+        )
+        res.status(200).json(updateUser.data)
+      } else {
+        const updateUser = await authClient(process.env.FAUNA_GUEST_SECRET).query<Player>(
+          q.Update(q.Ref(q.Collection('User'), id), {
+            data: {
+              score: newScore,
+              tasks: [
+                ...player.data.tasks,
+                {
+                  month,
+                  title,
+                  created_at,
+                  score
+                }
+              ],
+            },
+          })
+          )
+          res.status(200).json(updateUser.data)
+      }
 
-
-      const updateUser = await authClient(process.env.FAUNA_GUEST_SECRET).query<Player>(
-        q.Update(q.Ref(q.Collection('User'), id), {
-          data: {
-            score: newScore,
-            tasks: [
-              ...player.data.tasks,
-              {
-                month,
-                title,
-                created_at,
-                score
-              }
-            ],
-          },
-        })
-      )
       
       // ok
-      res.status(200).json(updateUser.data)
     } catch (e) {
       // something went wrong
       res.status(500).json({ error: e.message });

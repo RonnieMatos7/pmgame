@@ -1,4 +1,4 @@
-import { Box, Text, Button, Divider, Flex, Heading, HStack, Select, SimpleGrid, VStack, Avatar, Checkbox, Icon, Table, Tbody, Td, Th, Thead, Tooltip, Tr, NumberDecrementStepper, NumberIncrementStepper, NumberInput, NumberInputField, NumberInputStepper } from "@chakra-ui/react";
+import { Box, Text, Button, Divider, Flex, Heading, HStack, Select, SimpleGrid, VStack, Avatar, Checkbox, Icon, Table, Tbody, Td, Th, Thead, Tooltip, Tr, NumberDecrementStepper, NumberIncrementStepper, NumberInput, NumberInputField, NumberInputStepper, Tab, TabList, TabPanel, TabPanels, Tabs } from "@chakra-ui/react";
 import { SubmitHandler, useForm } from 'react-hook-form'
 import * as yup from 'yup';
 import { yupResolver } from '@hookform/resolvers/yup'
@@ -14,7 +14,7 @@ import { queryClient } from "../../services/queryClient";
 import { format } from "date-fns";
 import useSWR from "swr";
 import { useEffect, useState } from "react";
-import { RiAddLine, RiCheckFill, RiCloseFill, RiDeleteBin2Line, RiFileAddLine } from "react-icons/ri";
+import { RiAddLine, RiCheckFill, RiCloseFill, RiDeleteBin2Line, RiFileAddLine, RiFileList3Line, RiMedalLine } from "react-icons/ri";
 
 
 type CreateSolicitationFormData = {
@@ -38,7 +38,7 @@ type PlayerProps ={
   image_url: string
 }
 
-type ShopCartProps = {
+type ShopCartTaskProps = {
   id: string,
   player: {
     id: string,
@@ -47,6 +47,20 @@ type ShopCartProps = {
     image_url: string
   },
   task_id: string,
+  title: string,
+  score: number,
+  month: string,
+  created_at: string
+}
+type ShopCartBadgeProps = {
+  id: string,
+  player: {
+    id: string,
+    name: string,
+    email: string,
+    image_url: string
+  },
+  badge_id: string,
   title: string,
   score: number,
   month: string,
@@ -81,8 +95,10 @@ export default function CreateSolicitation() {
   const router = useRouter()
 
   const [total, setTotal] = useState<number>(0)
-  const [shopCart, setShopCart] = useState<ShopCartProps[]>([])
+  const [shopCartTask, setShopCartTask] = useState<ShopCartTaskProps[]>([])
+  const [shopCartBadge, setShopCartBadge] = useState<ShopCartBadgeProps[]>([])
   const [taskSelected, setTaskSelected] = useState('')
+  const [badgeSelected, setBadgeSelected] = useState('')
   const [selectedPlayer, setSelectedPlayer] = useState('')
   const [monthSelected, setMonthSelected] = useState('')
 
@@ -105,6 +121,21 @@ export default function CreateSolicitation() {
       };
     })
     return tasks.sort((a,b) => (a.title > b.title) ? 1 : -1);
+  })
+  const { data:badges, isLoading:isLoadingBadges, error:errorBadges} = useQuery('badges', async () => {
+    const response = await api.get('/badges/getAll')
+    
+    const badges = response.data?.map(badge => {
+      return {
+        id: badge['ref']['@ref'].id,
+        title: badge.data.title,
+        score: badge.data.score,
+        description: badge.data.description,
+        icon: badge.data.icon,
+        created_at: badge.data.created_at,
+      };
+    })
+    return badges.sort((a,b) => (a.title > b.title) ? 1 : -1);
   })
 
   const { data:players, isLoading, error} = useQuery('players', async () => {
@@ -149,21 +180,33 @@ export default function CreateSolicitation() {
     resolver: yupResolver(createUserFormSchema)
   })
 
-  function handleDeleteShopCartItem(id:string, score:number){
+  function handleDeleteShopCartTaskItem(id:string, score:number){
     
     console.log({
       id,
       score
     })
-    const dados = shopCart
+    const dados = shopCartTask
     const subtotal = total - score
     setTotal(subtotal)
     var filteredData = dados.filter(e => e.id !== id)
-    setShopCart(filteredData)
+    setShopCartTask(filteredData)
+  } 
+  function handleDeleteShopCartBadgeItem(id:string, score:number){
+    
+    console.log({
+      id,
+      score
+    })
+    const dados = shopCartBadge
+    const subtotal = total - score
+    setTotal(subtotal)
+    var filteredData = dados.filter(e => e.id !== id)
+    setShopCartBadge(filteredData)
   } 
   
 
-  async function handleAdditem(id:any){
+  async function handleAddTaskitem(id:any){
     let task = await tasks.filter(x => x.id === taskSelected)
     let player = await players.filter(x => x.id === selectedPlayer)[0]
     console.log({task, player})
@@ -173,6 +216,7 @@ export default function CreateSolicitation() {
           setTotal(subtotal)
           const newItem = {
             player,
+            type: 'task',
             title: task[0].title,
             score: task[0].score,
             month: monthSelected,
@@ -180,7 +224,29 @@ export default function CreateSolicitation() {
             id,
             created_at: format(new Date(), 'dd/MM/yyyy')
           }
-          setShopCart((t) => [...t, newItem]);
+          setShopCartTask((t) => [...t, newItem]);
+        }
+      
+  }
+  async function handleAddBadgeitem(id:any){
+    let badge = await badges.filter(x => x.id === badgeSelected)
+    let player = await players.filter(x => x.id === selectedPlayer)[0]
+    let subtotal = 0
+    if(badge[0]){
+          subtotal = total + badge[0].score
+          setTotal(subtotal)
+          const newItem = {
+            player,
+            type: 'badge',
+            icon: badge[0].icon,
+            title: badge[0].title,
+            score: badge[0].score,
+            month: monthSelected,
+            badge_id:badge[0]?.id,
+            id,
+            created_at: format(new Date(), 'dd/MM/yyyy')
+          }
+          setShopCartBadge((t) => [...t, newItem]);
         }
       
   }
@@ -192,9 +258,25 @@ export default function CreateSolicitation() {
   }
 
   
-  const handleAddSolicitationItem = async () => {
+  const handleAddSolicitationTaskItem = async () => {
     try {
-      shopCart.map(async item=>{
+      shopCartTask.map(async item=>{
+        console.log(item)
+        const response = await api.post('solicitations/createSolicitation', {
+          solicitation: {
+            item, 
+            created_at: format(new Date(), 'dd/MM/yyyy')
+          }
+        })})
+        router.push('/solicitations')
+    } catch (error) {
+      console.log(error)
+    }
+  }
+
+  const handleAddSolicitationBadgeItem = async () => {
+    try {
+      shopCartBadge.map(async item=>{
         console.log(item)
         const response = await api.post('solicitations/createSolicitation', {
           solicitation: {
@@ -225,163 +307,327 @@ export default function CreateSolicitation() {
           bg="gray.800"
           p={["6", "8"]}
         >
-          <Flex mb="8" justify="space-between" align="center">
-            <Heading size="lg" fontWeight="normal">
-              Criar Solicitação
-              
-              {/* { !data && <Spinner size="sm" color="gray.500" ml="4" /> } */}
-            </Heading>
-            <Heading size="md" fontWeight="normal">
-              Total: {total}
-            </Heading>
+          <Tabs size='md' variant='enclosed'>
+            <TabList>
+              <Tab><Icon as={RiFileList3Line}/>&nbsp;Entrega</Tab>
+              <Tab><Icon as={RiMedalLine}/>&nbsp;Conquista</Tab>
+            </TabList>
+            <TabPanels>
+              <TabPanel>
+                <Flex mb="8" justify="space-between" align="center">
+                  <Heading size="lg" fontWeight="normal">
+                    Criar Solicitação de Entrega
+                    
+                    {/* { !data && <Spinner size="sm" color="gray.500" ml="4" /> } */}
+                  </Heading>
+                  <Heading size="md" fontWeight="normal">
+                    Total: {total}
+                  </Heading>
 
-          </Flex>
+                </Flex>
 
-          <Divider my="6" borderColor="gray.700" />
+                <Divider my="6" borderColor="gray.700" />
 
-          <VStack spacing="8" onSubmit={()=>handleAddSolicitationItem()}>
-            <SimpleGrid minChildWidth="240px" flex={'1'} spacing={["4", "6"]} w="100%"
-            
-            >
-              <Box>
-                <Text fontWeight='medium'>Mês de Referência</Text>
-                <Select
-                 mt='3'
-                  name="month"
-                  onChange={e=> setMonthSelected(e.target.value)}
-                  label="Mês de Referência"
-                  error={errors.month}
-                >
-                  <option key={'Selecione'} value={0}>Selecione o mês</option> 
-                  <option key={'Maio'} value={'Maio'}>Maio</option>  
-                  <option key={'Junho'} value={'Junho'}>Junho</option>  
-                  <option key={'Julho'} value={'Julho'}>Julho</option>  
-                  <option key={'Agosto'} value={'Agosto'}>Agosto</option>  
-                  <option key={'Setembro'} value={'Setembro'}>Setembro</option>  
-                  <option key={'Outubro'} value={'Outubro'}>Outubro</option>  
-                  <option key={'Novembro'} value={'Novembro'}>Novembro</option>  
-                </Select>
-              </Box>
-              
-            
-              <Box>
-                <Text fontWeight='medium'>Jogador</Text>
-                  <Select
-                    mt='3'
-                    name="player"
-                    onChange={(e => setSelectedPlayer(e.target.value))}
-                    label="Jogador"
-                    error={errors.player}
+                <VStack spacing="8" onSubmit={()=>handleAddSolicitationTaskItem()}>
+                  <SimpleGrid minChildWidth="240px" flex={'1'} spacing={["4", "6"]} w="100%"
+                  
                   >
-                    <option key={'SelecionePlayer'} value={0}>Selecione o Jogador</option> 
-                    {players?.map(item => (
-                        <option key={item?.name} value={item?.id}>{item?.name}</option> 
-                      ))}
+                    <Box>
+                      <Text fontWeight='medium'>Mês de Referência</Text>
+                      <Select
+                      mt='3'
+                        name="month"
+                        onChange={e=> setMonthSelected(e.target.value)}
+                        label="Mês de Referência"
+                        error={errors.month}
+                      >
+                        <option key={'Selecione'} value={0}>Selecione o mês</option> 
+                        <option key={'Maio'} value={'Maio'}>Maio</option>  
+                        <option key={'Junho'} value={'Junho'}>Junho</option>  
+                        <option key={'Julho'} value={'Julho'}>Julho</option>  
+                        <option key={'Agosto'} value={'Agosto'}>Agosto</option>  
+                        <option key={'Setembro'} value={'Setembro'}>Setembro</option>  
+                        <option key={'Outubro'} value={'Outubro'}>Outubro</option>  
+                        <option key={'Novembro'} value={'Novembro'}>Novembro</option>  
+                      </Select>
+                    </Box>
+                    
+                  
+                    <Box>
+                      <Text fontWeight='medium'>Jogador</Text>
+                        <Select
+                          mt='3'
+                          name="player"
+                          onChange={(e => setSelectedPlayer(e.target.value))}
+                          label="Jogador"
+                          error={errors.player}
+                        >
+                          <option key={'SelecionePlayer'} value={0}>Selecione o Jogador</option> 
+                          {players?.map(item => (
+                              <option key={item?.name} value={item?.id}>{item?.name}</option> 
+                            ))}
 
-                  </Select>
-              </Box>
-              <Box>
-                <Text fontWeight='medium'>Entrega</Text>
-                  <Select
-                    mt='3'
-                    name="task"
-                    onChange={(e => setTaskSelected(e.target.value))}
-                    label="Entrega"
-                    error={errors.task}
-                  >
-                    <option key={'SelecioneTask'} value={0}>Selecione a Entrega</option> 
-                    {tasks?.map(item => (
-                        <option key={item?.title} value={item?.id}>{item?.title}</option> 
-                      ))}
+                        </Select>
+                    </Box>
+                    <Box>
+                      <Text fontWeight='medium'>Entrega</Text>
+                        <Select
+                          mt='3'
+                          name="task"
+                          onChange={(e => setTaskSelected(e.target.value))}
+                          label="Entrega"
+                          error={errors.task}
+                        >
+                          <option key={'SelecioneTask'} value={0}>Selecione a Entrega</option> 
+                          {tasks?.map(item => (
+                              <option key={item?.title} value={item?.id}>{item?.title}</option> 
+                            ))}
 
-                  </Select>
-              </Box>
-              
+                        </Select>
+                    </Box>
+                    
+                    <Box mx='0' my={"auto"} pt={10} justifyContent='flex-end'>
+                      <Tooltip hasArrow label='Adicionar item' placement='top'>
+                        <Button
+                          type="submit"
+                          as="a"
+                          size="sm"
+                          fontSize="sm"
+                          colorScheme="teal"
+                          shadow="md"
+                          onClick={async ()=>await handleAddTaskitem(new Date().getMilliseconds())}
+                          >
+                          <Icon as={RiAddLine} fontSize="16"/>
+                        </Button>
+                      </Tooltip>
+                    </Box>
+                  </SimpleGrid>
 
+                <Divider my="6" borderColor="gray.700" />
+                <Table colorScheme="whiteAlpha">
+                      <Thead>
+                        <Tr>
+                          <Th px={["4", "4", "6"]} color="gray.300" width="8">
+                            <Checkbox colorScheme="pink" />
+                          </Th>
+                          <Th>Jogador</Th>
+                          <Th>Titulo</Th>
+                          <Th>Pontuação</Th>
+                          <Th>Mês</Th>
+                          <Th>Ação</Th>
+                        </Tr>
+                      </Thead>
+                      <Tbody>
+                        {shopCartTask?.map(solicitation => {
+                          return (
+                            <Tr key={solicitation?.id}>
+                              <Td px={["4", "4", "6"]}>
+                                <Checkbox colorScheme="pink" />
+                              </Td>
+                              <Td>{solicitation?.player.name}</Td>
+                              <Td>{solicitation?.title}</Td>
+                              <Td>{solicitation?.score}</Td>
+                              <Td>{solicitation?.month}</Td>
+                              <Td>
+                                <HStack>
+                                    <Tooltip hasArrow label='Excluir Entrega' placement='top'>
+                                      <Button
+                                        as="a"
+                                        size="sm"
+                                        fontSize="sm"
+                                        colorScheme="red"
+                                        shadow="md"
+                                        onClick={()=>handleDeleteShopCartTaskItem(solicitation.id, solicitation.score)}
+                                      >
+                                        <Icon as={RiDeleteBin2Line} fontSize="16"/>
+                                      </Button>
+                                    </Tooltip>
+                                </HStack>
+                              </Td>
 
-            
-              
-              <Box mx='0' my={"auto"} pt={10} justifyContent='flex-end'>
-                <Tooltip hasArrow label='Adicionar item' placement='top'>
-                  <Button
-                    type="submit"
-                    as="a"
-                    size="sm"
-                    fontSize="sm"
-                    colorScheme="teal"
-                    shadow="md"
-                    onClick={async ()=>await handleAdditem(new Date().getMilliseconds())}
+                            </Tr>
+                          )
+                        })}
+                      </Tbody>
+                    </Table>
+                  
+                </VStack>
+                <Divider my="6" borderColor="gray.700" />
+                <Flex mt="8" justify="flex-end">
+                  <HStack spacing="4">
+                    <Link href="/users" passHref>
+                      <Button as="a" colorScheme="whiteAlpha">Cancelar</Button>
+                    </Link>
+                    <Button
+                      onClick={()=>handleAddSolicitationTaskItem()}
+                      colorScheme="pink"
+                      isLoading={isSubmitting}
                     >
-                    <Icon as={RiAddLine} fontSize="16"/>
-                  </Button>
-                </Tooltip>
-              </Box>
-            </SimpleGrid>
+                      Salvar
+                    </Button>
+                  </HStack>
+                </Flex>
+              </TabPanel>
+              <TabPanel>
+              <Flex mb="8" justify="space-between" align="center">
+                  <Heading size="lg" fontWeight="normal">
+                    Criar Solicitação de Conquista
+                    
+                    {/* { !data && <Spinner size="sm" color="gray.500" ml="4" /> } */}
+                  </Heading>
+                  <Heading size="md" fontWeight="normal">
+                    Total: {total}
+                  </Heading>
 
-          <Divider my="6" borderColor="gray.700" />
-          <Table colorScheme="whiteAlpha">
-                <Thead>
-                  <Tr>
-                    <Th px={["4", "4", "6"]} color="gray.300" width="8">
-                      <Checkbox colorScheme="pink" />
-                    </Th>
-                    <Th>Jogador</Th>
-                    <Th>Titulo</Th>
-                    <Th>Pontuação</Th>
-                    <Th>Mês</Th>
-                    <Th>Ação</Th>
-                  </Tr>
-                </Thead>
-                <Tbody>
-                  {shopCart?.map(solicitation => {
-                    return (
-                      <Tr key={solicitation?.id}>
-                        <Td px={["4", "4", "6"]}>
-                          <Checkbox colorScheme="pink" />
-                        </Td>
-                        <Td>{solicitation?.player.name}</Td>
-                        <Td>{solicitation?.title}</Td>
-                        <Td>{solicitation?.score}</Td>
-                        <Td>{solicitation?.month}</Td>
-                        <Td>
-                          <HStack>
-                              <Tooltip hasArrow label='Excluir Entrega' placement='top'>
-                                <Button
-                                  as="a"
-                                  size="sm"
-                                  fontSize="sm"
-                                  colorScheme="red"
-                                  shadow="md"
-                                  onClick={()=>handleDeleteShopCartItem(solicitation.id, solicitation.score)}
-                                >
-                                  <Icon as={RiDeleteBin2Line} fontSize="16"/>
-                                </Button>
-                              </Tooltip>
-                          </HStack>
-                        </Td>
+                </Flex>
 
-                      </Tr>
-                    )
-                  })}
-                </Tbody>
-              </Table>
-            
-          </VStack>
-          <Divider my="6" borderColor="gray.700" />
-          <Flex mt="8" justify="flex-end">
-            <HStack spacing="4">
-              <Link href="/users" passHref>
-                <Button as="a" colorScheme="whiteAlpha">Cancelar</Button>
-              </Link>
-              <Button
-                onClick={()=>handleAddSolicitationItem()}
-                colorScheme="pink"
-                isLoading={isSubmitting}
-              >
-                Salvar
-              </Button>
-            </HStack>
-          </Flex>
+                <Divider my="6" borderColor="gray.700" />
+
+                <VStack spacing="8" onSubmit={()=>handleAddSolicitationBadgeItem()}>
+                  <SimpleGrid minChildWidth="240px" flex={'1'} spacing={["4", "6"]} w="100%"
+                  
+                  >
+                    <Box>
+                      <Text fontWeight='medium'>Mês de Referência</Text>
+                      <Select
+                      mt='3'
+                        name="month"
+                        onChange={e=> setMonthSelected(e.target.value)}
+                        label="Mês de Referência"
+                        error={errors.month}
+                      >
+                        <option key={'Selecione'} value={0}>Selecione o mês</option> 
+                        <option key={'Maio'} value={'Maio'}>Maio</option>  
+                        <option key={'Junho'} value={'Junho'}>Junho</option>  
+                        <option key={'Julho'} value={'Julho'}>Julho</option>  
+                        <option key={'Agosto'} value={'Agosto'}>Agosto</option>  
+                        <option key={'Setembro'} value={'Setembro'}>Setembro</option>  
+                        <option key={'Outubro'} value={'Outubro'}>Outubro</option>  
+                        <option key={'Novembro'} value={'Novembro'}>Novembro</option>  
+                      </Select>
+                    </Box>
+                    
+                  
+                    <Box>
+                      <Text fontWeight='medium'>Jogador</Text>
+                        <Select
+                          mt='3'
+                          name="player"
+                          onChange={(e => setSelectedPlayer(e.target.value))}
+                          label="Jogador"
+                          error={errors.player}
+                        >
+                          <option key={'SelecionePlayerBadge'} value={0}>Selecione o Jogador</option> 
+                          {players?.map(item => (
+                              <option key={item?.name} value={item?.id}>{item?.name}</option> 
+                            ))}
+
+                        </Select>
+                    </Box>
+                    <Box>
+                      <Text fontWeight='medium'>Conquista</Text>
+                        <Select
+                          mt='3'
+                          name="task"
+                          onChange={(e => setBadgeSelected(e.target.value))}
+                          label="Entrega"
+                          error={errors.task}
+                        >
+                          <option key={'SelecioneBadge'} value={0}>Selecione a Conquista</option> 
+                          {badges?.map((item, index) => (
+                              <option key={index} value={item?.id}>{item?.title}</option> 
+                            ))}
+
+                        </Select>
+                    </Box>
+                    
+                    <Box mx='0' my={"auto"} pt={10} justifyContent='flex-end'>
+                      <Tooltip hasArrow label='Adicionar item' placement='top'>
+                        <Button
+                          type="submit"
+                          as="a"
+                          size="sm"
+                          fontSize="sm"
+                          colorScheme="teal"
+                          shadow="md"
+                          onClick={async ()=>await handleAddBadgeitem(new Date().getMilliseconds())}
+                          >
+                          <Icon as={RiAddLine} fontSize="16"/>
+                        </Button>
+                      </Tooltip>
+                    </Box>
+                  </SimpleGrid>
+
+                <Divider my="6" borderColor="gray.700" />
+                <Table colorScheme="whiteAlpha">
+                      <Thead>
+                        <Tr>
+                          <Th px={["4", "4", "6"]} color="gray.300" width="8">
+                            <Checkbox colorScheme="pink" />
+                          </Th>
+                          <Th>Jogador</Th>
+                          <Th>Conquista</Th>
+                          <Th>Pontuação</Th>
+                          <Th>Mês</Th>
+                          <Th>Ação</Th>
+                        </Tr>
+                      </Thead>
+                      <Tbody>
+                        {shopCartBadge?.map(solicitation => {
+                          return (
+                            <Tr key={solicitation?.id}>
+                              <Td px={["4", "4", "6"]}>
+                                <Checkbox colorScheme="pink" />
+                              </Td>
+                              <Td>{solicitation?.player.name}</Td>
+                              <Td>
+                                <Avatar name={solicitation?.title} src={`/badges/${solicitation?.title}.png`}/>
+                              </Td>
+                              <Td>{solicitation?.score}</Td>
+                              <Td>{solicitation?.month}</Td>
+                              <Td>
+                                <HStack>
+                                    <Tooltip hasArrow label='Excluir Entrega' placement='top'>
+                                      <Button
+                                        as="a"
+                                        size="sm"
+                                        fontSize="sm"
+                                        colorScheme="red"
+                                        shadow="md"
+                                        onClick={()=>handleDeleteShopCartBadgeItem(solicitation.id, solicitation.score)}
+                                      >
+                                        <Icon as={RiDeleteBin2Line} fontSize="16"/>
+                                      </Button>
+                                    </Tooltip>
+                                </HStack>
+                              </Td>
+
+                            </Tr>
+                          )
+                        })}
+                      </Tbody>
+                    </Table>
+                  
+                </VStack>
+                <Divider my="6" borderColor="gray.700" />
+                <Flex mt="8" justify="flex-end">
+                  <HStack spacing="4">
+                    <Link href="/users" passHref>
+                      <Button as="a" colorScheme="whiteAlpha">Cancelar</Button>
+                    </Link>
+                    <Button
+                      onClick={()=>handleAddSolicitationBadgeItem()}
+                      colorScheme="pink"
+                      isLoading={isSubmitting}
+                    >
+                      Salvar
+                    </Button>
+                  </HStack>
+                </Flex>
+              </TabPanel>
+            </TabPanels>
+          </Tabs>
+          
         </Box>
       </Flex>
     </Box>

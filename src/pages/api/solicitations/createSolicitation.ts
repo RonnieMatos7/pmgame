@@ -24,7 +24,7 @@ type Solicitation = {
 
 export default async (req: NextApiRequest, res: NextApiResponse<Solicitation[] | any >) => {
   if(req.method === 'POST'){
-    const { player, title, score, month, description, pmo_list, created_at } = req.body.solicitation.item;
+    const { player, title, score, month, description, pmo_list, created_at, type } = req.body.solicitation.item;
 
     
     try {
@@ -34,6 +34,7 @@ export default async (req: NextApiRequest, res: NextApiResponse<Solicitation[] |
             player,
             title,
             score,
+            type,
             month,
             status: 'Aguardando aprovação',
             created_at

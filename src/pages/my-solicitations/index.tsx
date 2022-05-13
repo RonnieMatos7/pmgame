@@ -40,8 +40,11 @@ export default function SolicitationList({ token }) {
         id: solicitation['ref']['@ref'].id,
         player: solicitation.data.player,
         title: solicitation.data.title,
+        type: solicitation.data.type,
         score: solicitation.data.score,
+        month: solicitation.data.month,
         status: solicitation.data.status,
+        approval_data: solicitation.data.approval_data,
         description: solicitation.data.description,
         created_at: solicitation.data.created_at,
       };
@@ -100,10 +103,9 @@ export default function SolicitationList({ token }) {
                     <Th px={["4", "4", "6"]} color="gray.300" width="8">
                       <Checkbox colorScheme="pink" />
                     </Th>
-                    <Th>Nome</Th>
-                    <Th>Pontuação</Th>
-                    <Th>Criado em</Th>
-                    <Th>Status</Th>
+                    <Th>Tipo</Th>
+                    <Th>Solicitação</Th>
+                    <Th>Ação</Th>
                   </Tr>
                 </Thead>
                 <Tbody>
@@ -154,12 +156,36 @@ export default function SolicitationList({ token }) {
                           <Td px={["4", "4", "6"]}>
                             <Checkbox colorScheme="pink" />
                           </Td>
-                          <Td>{solicitation?.title}</Td>
-                          <Td>{solicitation?.score}</Td>
+                          <Td>
+                            <Text>{solicitation?.type === 'badge' ? 'Conquista' : 'Tarefa'}</Text>
+                          </Td>
+                          <Td>
+                          {solicitation?.type === "badge"
+                            ? (
+                              <HStack>
+                                <Box>
+                                  <Avatar name={solicitation?.title} src={`/badges/${solicitation?.title}.png`}/>
+                                </Box>
+                                <Box>
+                                  <Text fontWeight="bold">{solicitation?.title}</Text>
+                                  <Text fontSize="sm" color="gray.300">Referência: {solicitation?.month}</Text>
+                                  <Text fontSize="sm" color="gray.300">Pontuação: {solicitation?.score}</Text>
+                                </Box>
+                              </HStack>
+                            )
+                            : (
+                              <Box>
+                                <Text fontWeight="bold">{solicitation?.title}</Text>
+                                <Text fontSize="sm" color="gray.300">Referência: {solicitation?.month}</Text>
+                                <Text fontSize="sm" color="gray.300">Pontuação: {solicitation?.score}</Text>
+                              </Box>
+                            )
+                          }
+                        </Td>
                           <Td>{solicitation?.created_at}</Td>
                           <Td>
                             <Badge colorScheme={solicitation?.status === 'Reprovada' ? 'red' : solicitation?.status === 'Aprovada' ? 'green' : 'gray'}>{solicitation?.status}</Badge>
-                            
+                            <Text fontSize="sm" color="gray.300">Aprovado por {solicitation?.approval_data?.approvedBy} em {solicitation?.approval_data?.approvedDate}</Text>
                           </Td>
 
                         </Tr>
