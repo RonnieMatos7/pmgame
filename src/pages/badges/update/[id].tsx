@@ -22,8 +22,8 @@ type CreateBadgeFormData = {
 
 const createUserFormSchema = yup.object().shape({
   title: yup.string().required('Nome obrigatório'),
-  description: yup.number().required('Descrição obrigatória'),
-  icon: yup.number().required('Icone obrigatório'),
+  description: yup.string().required('Descrição obrigatória'),
+  icon: yup.string().required('Icone obrigatório'),
 })
 
 export default function UpdateUser() {
