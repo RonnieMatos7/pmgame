@@ -1,5 +1,6 @@
-import { Avatar, Badge, Box, Center, Divider, Flex, HStack, SimpleGrid, Text, theme, VStack } from "@chakra-ui/react";
+import { Avatar, Badge, Box, Center, Checkbox, Divider, Flex, HStack, IconButton, Link, SimpleGrid, Table, Tbody, Td, Text, Th, Thead, theme, Tooltip, Tr, VStack } from "@chakra-ui/react";
 import dynamic from 'next/dynamic';
+import { RiPencilFill, RiDeleteBin2Fill } from "react-icons/ri";
 import { useQuery } from "react-query";
 import { DepartmentAvatar } from "../components/DepartmentAvatar";
 import { Header } from "../components/Header";
@@ -98,11 +99,11 @@ export default function Dashboard() {
             borderRadius={8}
             pb="4"
           >
-            <Text fontSize="lg" mb="4">Top Departamentos</Text>
+            <Text fontSize="lg" mb="4">Top Departamentos (Em breve)</Text>
             
             {/* <Chart options={options} series={series} type="area" height={160} /> */}
             
-            <HStack>
+            {/* <HStack>
               <DepartmentAvatar
                 name="DCMD"
                 department="DTEC"
@@ -133,7 +134,7 @@ export default function Dashboard() {
                 color="orange"
                 avatar= {false}
               />
-            </HStack>
+            </HStack> */}
             
           </Box>
           <Box
@@ -144,23 +145,41 @@ export default function Dashboard() {
           >
             <Text fontSize="lg" mb="4">Top Gerentes de Projetos</Text>
             {/* <Chart options={options} series={series} type="area" height={160} /> */}
-
-            {data?.map(player => {
-              return (
-                <>
-                  <PlayerAvatar
-                    name={player.name}
-                    department={player.department}
-                    score={player.score}
-                    position={player.position}
-                    color={player.color}
-                    avatar
-                    />
-                  <Divider orientation='horizontal' />
-                </>
-              )
-
-            })}
+            <Table colorScheme="whiteAlpha">
+                <Thead>
+                  <Tr >
+                    <Th justifyContent={"flex-start"}>Avatar</Th>
+                    <Th justifyContent={"flex-start"}>Jogador</Th>
+                    <Th justifyContent={"flex-end"}>Pontuação</Th>
+                  </Tr>
+                </Thead>
+                <Tbody>
+                {data?.map(player => {
+                    return (
+                      <Tr key={player.id}>
+                        <Td justifyContent={"flex-start"}>
+                          <Avatar name={player?.name} src={player?.image_url}/>
+                        </Td>
+                        <Td justifyContent={"flex-start"}>
+                          <Box>
+                            <Text fontWeight='bold'>
+                              {player?.name}
+                            </Text>
+                            <Text fontSize='sm'>{player?.department}</Text>
+                          </Box>  
+                        </Td>
+                        <Td justifyContent={"flex-end"}>
+                        <Badge colorScheme='gray'  h='full' py='0.5' px='4' w='auto' variant='solid'>
+                          <Text fontWeight='bold' fontSize='sm'>
+                            {player?.score}
+                          </Text>
+                        </Badge>
+                        </Td>
+                      </Tr>
+                    )
+                  })}
+                </Tbody>
+              </Table>
             
           </Box>
         </SimpleGrid>
