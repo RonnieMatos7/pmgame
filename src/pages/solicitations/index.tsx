@@ -84,7 +84,8 @@ export default function SolicitationList({ token }) {
           approvedDate: format(new Date(), 'dd/MM/yyyy')
         }
       }
-      ).then(
+      ///rank/update
+      ).then(() => api.get('/rank/update')).then(
         () => {
           focusManager.setFocused(true)
           toast({

@@ -76,6 +76,7 @@ export default function Dashboard() {
         name: player.data.name,
         department: player.data.department,
         role: player.data.role,
+        position: player.data.position,
         email: player.data.email,
         score: player.data.score,
         created_at: player.data.created_at,//format(player.data.created_at, 'dd/MM/yyyy'),
@@ -148,6 +149,7 @@ export default function Dashboard() {
             <Table colorScheme="whiteAlpha">
                 <Thead>
                   <Tr >
+                    <Th justifyContent={"center"}>Posição</Th>
                     <Th justifyContent={"flex-start"}>Avatar</Th>
                     <Th justifyContent={"flex-start"}>Jogador</Th>
                     <Th justifyContent={"flex-end"}>Pontuação</Th>
@@ -157,6 +159,11 @@ export default function Dashboard() {
                 {data?.map(player => {
                     return (
                       <Tr key={player.id}>
+                        <Td justifyContent={"center"}>
+                          <Badge bg={player?.position=== 1 ? 'yellow.400' : player?.position=== 2 ? 'gray.400' : 'orange.400'  } textColor='white'  h='full' py='0.5' px='4' w='auto'>
+                            {player?.position}
+                          </Badge>           
+                        </Td>
                         <Td justifyContent={"flex-start"}>
                           <Avatar name={player?.name} src={player?.image_url}/>
                         </Td>
