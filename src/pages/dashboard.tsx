@@ -1,6 +1,7 @@
-import { Avatar, Badge, Box, Center, Checkbox, Divider, Flex, HStack, IconButton, Link, SimpleGrid, Table, Tbody, Td, Text, Th, Thead, theme, Tooltip, Tr, VStack } from "@chakra-ui/react";
+import { Avatar, AvatarGroup, Badge, Box, Center, Checkbox, Divider, Flex, HStack, Icon, IconButton, Link, SimpleGrid, Table, Tbody, Td, Text, Th, Thead, theme, Tooltip, Tr, VStack } from "@chakra-ui/react";
 import dynamic from 'next/dynamic';
-import { RiPencilFill, RiDeleteBin2Fill } from "react-icons/ri";
+import { RiPencilFill, RiDeleteBin2Fill, RiArrowLeftSFill, RiArrowRightSFill, RiArrowDownSFill, RiArrowUpSFill, RiSubtractFill } from "react-icons/ri";
+import { FaCrown } from "react-icons/fa";
 import { useQuery } from "react-query";
 import { DepartmentAvatar } from "../components/DepartmentAvatar";
 import { Header } from "../components/Header";
@@ -77,13 +78,15 @@ export default function Dashboard() {
         department: player.data.department,
         role: player.data.role,
         position: player.data.position,
+        old_position: player.data.old_position,
+        badges: player.data.badges,
         email: player.data.email,
         score: player.data.score,
         created_at: player.data.created_at,//format(player.data.created_at, 'dd/MM/yyyy'),
         image_url: player.data.image_url,
       };
     })
-    return players.sort((a,b) => (a.name > b.name) ? 1 : -1);
+    return players.sort((a,b) => (a.position > b.position) ? 1 : -1);
   })
   
   return (
@@ -152,6 +155,7 @@ export default function Dashboard() {
                     <Th justifyContent={"center"}>Posição</Th>
                     <Th justifyContent={"flex-start"}>Avatar</Th>
                     <Th justifyContent={"flex-start"}>Jogador</Th>
+                    <Th justifyContent={"fcenter"}>Conquistas</Th>
                     <Th justifyContent={"flex-end"}>Pontuação</Th>
                   </Tr>
                 </Thead>
@@ -160,9 +164,48 @@ export default function Dashboard() {
                     return (
                       <Tr key={player.id}>
                         <Td justifyContent={"center"}>
-                          <Badge bg={player?.position=== 1 ? 'yellow.400' : player?.position=== 2 ? 'gray.400' : 'orange.400'  } textColor='white'  h='full' py='0.5' px='4' w='auto'>
-                            {player?.position}
-                          </Badge>           
+                          <HStack>
+                          { player?.position=== 1 ?
+                              (
+                                <Icon as={FaCrown} w={8} h={8} mr={2} color='yellow.400' />
+                                )
+                                : player?.position=== 2 ?
+                                (
+                                  <Icon as={FaCrown} w={8} h={8} mr={2} color='gray.400' />
+                                  )
+                                  : player?.position=== 3 ?
+                                  (
+                                    <Icon as={FaCrown} w={8} h={8} mr={2} color='orange.400' />
+                                    )
+                                    :
+                                    (
+                                      <Badge bg={'gray.400'} textColor='white' mr={2}  h='full' py='0.5' px='4' w='auto'>
+                                  {player?.position}
+                                </Badge>           
+                              )
+                            }
+                                        { player?.position - player?.old_position === 0 ?
+                                          (
+                                            <Text fontSize={"small"}>
+                                              <Icon as={RiSubtractFill} w={6} h={6} color='gray.400' />
+                                            </Text>
+                                          )
+                                          : player?.position - player?.old_position < 0 ?
+                                          (
+                                            <Text fontSize={"small"}>
+                                              -{player?.position - player?.old_position}
+                                              <Icon as={RiArrowDownSFill} w={6} h={6} color='red.400' />
+                                            </Text>
+                                            )
+                                            : 
+                                            (
+                                              <Text fontSize={"small"}>
+                                              +{player?.position - player?.old_position}
+                                              <Icon as={RiArrowUpSFill} w={6} h={6} color='green.400' />
+                                            </Text>
+                                            )
+                                          }
+                            </HStack>
                         </Td>
                         <Td justifyContent={"flex-start"}>
                           <Avatar name={player?.name} src={player?.image_url}/>
@@ -174,6 +217,13 @@ export default function Dashboard() {
                             </Text>
                             <Text fontSize='sm'>{player?.department}</Text>
                           </Box>  
+                        </Td>
+                        <Td justifyContent={"center"}>
+                          <AvatarGroup size='md' max={3}>
+                          {player?.badges?.map((badge,index) =>{
+                              <Avatar key={index} name={badge?.title} src={`/badges/${badge?.title}.png`} />
+                            })}
+                          </AvatarGroup>
                         </Td>
                         <Td justifyContent={"flex-end"}>
                         <Badge colorScheme='gray'  h='full' py='0.5' px='4' w='auto' variant='solid'>
