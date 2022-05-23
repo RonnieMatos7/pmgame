@@ -24,7 +24,7 @@ export default async function user(req, res) {
       q.Create(q.Collection('LoginLog'), {
         data: {
           player: data,
-          login: format(new Date(), 'dd/MM/yyyy'),
+          login: new Date(),
         },
       })
     );
