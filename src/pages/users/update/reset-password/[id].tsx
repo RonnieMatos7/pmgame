@@ -40,7 +40,7 @@ export default function UpdateUser() {
 
 
   const updateUser = useMutation(async (user: CreateUserFormData) => {
-    const response = await api.put(`user/update/${id}`, {
+    const response = await api.put(`user/password-reset/${id}`, {
       user: {
         ...user,
         updated_at: new Date(),
