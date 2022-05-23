@@ -26,10 +26,10 @@ type CreateUserFormData = {
 };
 
 const createUserFormSchema = yup.object().shape({
-  name: yup.string().required('Nome obrigatório'),
-  email: yup.string().required('E-mail obrigatório').email('E-mail inválido'),
-  /* role: yup.string().required('Perfil obrigatório').oneOf(['Jogador', 'PMO']), */
-  department: yup.string().required('Departamento obrigatório')
+  password: yup.string().required('Senha obrigatória').min(6, 'No mínimo 6 caracteres'),
+  password_confirmation: yup.string().oneOf([
+    null, yup.ref('password')
+  ], 'As senhas precisam ser iguais')
 })
 
 export default function UpdateUser() {
@@ -43,7 +43,7 @@ export default function UpdateUser() {
   
 
   const updateUser = useMutation(async (user: CreateUserFormData) => {
-    const response = await api.put(`user/reset-password/${userData.id}`, {
+    const response = await api.put(`user/password-reset/${userData.id}`, {
       user: {
         ...user,
         updated_at: new Date(),
@@ -93,7 +93,6 @@ export default function UpdateUser() {
                 name="password"
                 type="password"
                 label="Senha"
-                defaultValue={userData?.password}
                 error={errors.password}
                 {...register('password')}
               />
@@ -101,7 +100,6 @@ export default function UpdateUser() {
                 name="password_confirmation"
                 type="password"
                 label="Confirmação da senha"
-                defaultValue={userData?.password}
                 error={errors.password_confirmation}
                 {...register('password_confirmation')}
               />
