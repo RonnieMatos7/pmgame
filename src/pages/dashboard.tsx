@@ -9,6 +9,7 @@ import { PlayerAvatar } from "../components/PlayerAvatar";
 import { Sidebar } from "../components/Sidebar";
 import { api } from "../services/api";
 import { getAuthCookie } from "../utils/auth-cookies";
+import useSWR from "swr";
 
 /* const Chart = dynamic(() => import('react-apexcharts'), {
   ssr: false,
@@ -68,6 +69,9 @@ const series = [
 
 export default function Dashboard() {
 
+  const fetcher = (url) => fetch(url).then((r) => r.json());
+  const { data: topDepartment, mutate: mutateUser } = useSWR('/api/topDepartment', fetcher);
+
   const { data, isLoading, error} = useQuery('players', async () => {
     const response = await api.get('/players')
     
@@ -106,39 +110,51 @@ export default function Dashboard() {
             <Text fontSize="lg" mb="4">Top Departamentos (Em breve)</Text>
             
             {/* <Chart options={options} series={series} type="area" height={160} /> */}
+
+
             
-            {/* <HStack>
-              <DepartmentAvatar
-                name="DCMD"
-                department="DTEC"
-                score={1000}
-                position={1}
-                color="yellow"
-                avatar= {false}
-              />
-              <Center height='20'>
-                <Divider orientation='vertical' />
-              </Center>
-              <DepartmentAvatar
-                name="DECP"
-                department="DTEC"
-                score={1000}
-                position={2}
-                color="gray"
-                avatar= {false}
-              />
-              <Center height='20'>
-                <Divider orientation='vertical' />
-              </Center>
-              <DepartmentAvatar
-                name="Facilities"
-                department="DCSE"
-                score={1000}
-                position={3}
-                color="orange"
-                avatar= {false}
-              />
-            </HStack> */}
+            <HStack>
+              { topDepartment?.map((item, index )=> {
+                <Flex key={index} flex='1' justifyContent={"space-between"} alignItems='center' py='3' px='5' >
+                  { item?.position=== 1 ?
+                    (
+                      <Icon as={FaCrown} w={8} h={8} mr={2} color='yellow.400' />
+                      )
+                      : item?.position=== 2 ?
+                      (
+                        <Icon as={FaCrown} w={8} h={8} mr={2} color='gray.400' />
+                        )
+                        : 
+                        (
+                          <Icon as={FaCrown} w={8} h={8} mr={2} color='orange.400' />
+                          )
+                  }
+                  <Flex flex='1' justifyContent={"center"} alignItems='center'>
+                    
+                    <Box>
+                      <Text fontWeight='bold'>
+                      {item?.department}
+                      </Text>
+                    </Box>  
+                  </Flex>
+                  <Badge colorScheme='gray'  h='full' py='0.5' px='4' w='auto' variant='solid'>
+                    <Text fontWeight='bold' fontSize='sm'>
+                      {item?.average}
+                    </Text>
+                  </Badge>
+                </Flex>
+
+                { index< 2 ?
+                  (
+                    <Center height='20'>
+                      <Divider orientation='vertical' />
+                    </Center>
+                  )
+                : null
+                }
+
+              }) }
+            </HStack>
             
           </Box>
           <Box
