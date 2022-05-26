@@ -107,20 +107,22 @@ export default function Dashboard() {
             borderRadius={8}
             pb="4"
           >
-            <Text fontSize="lg" mb="4">Top Departamentos (Em breve)</Text>
+            <Text fontSize="lg" mb="4">Top Departamentos</Text>
             
             {/* <Chart options={options} series={series} type="area" height={160} /> */}
 
 
             
             <HStack>
-              { topDepartment?.map((item, index )=> {
-                <Flex key={index} flex='1' justifyContent={"space-between"} alignItems='center' py='3' px='5' >
-                  { item?.position=== 1 ?
+
+            {topDepartment ? (
+              <>
+              <Flex key={topDepartment[0]?.department} flex='1' justifyContent={"space-between"} aligntopDepartments='center' py='3' px='5' >
+                  { topDepartment[0]?.position=== 1 ?
                     (
                       <Icon as={FaCrown} w={8} h={8} mr={2} color='yellow.400' />
                       )
-                      : item?.position=== 2 ?
+                      : topDepartment[0]?.position=== 2 ?
                       (
                         <Icon as={FaCrown} w={8} h={8} mr={2} color='gray.400' />
                         )
@@ -129,31 +131,85 @@ export default function Dashboard() {
                           <Icon as={FaCrown} w={8} h={8} mr={2} color='orange.400' />
                           )
                   }
-                  <Flex flex='1' justifyContent={"center"} alignItems='center'>
+                  <Flex flex='1' justifyContent={"center"} aligntopDepartments='center'>
                     
                     <Box>
                       <Text fontWeight='bold'>
-                      {item?.department}
+                      {topDepartment[0]?.department}
                       </Text>
                     </Box>  
                   </Flex>
                   <Badge colorScheme='gray'  h='full' py='0.5' px='4' w='auto' variant='solid'>
                     <Text fontWeight='bold' fontSize='sm'>
-                      {item?.average}
+                      {topDepartment[0]?.average}
                     </Text>
                   </Badge>
                 </Flex>
+                <Center height='20'>
+                  <Divider orientation='vertical' />
+                </Center>
+              <Flex key={topDepartment[1]?.department} flex='1' justifyContent={"space-between"} aligntopDepartments='center' py='3' px='5' >
+                  { topDepartment[1]?.position=== 1 ?
+                    (
+                      <Icon as={FaCrown} w={8} h={8} mr={2} color='yellow.400' />
+                      )
+                      : topDepartment[1]?.position=== 2 ?
+                      (
+                        <Icon as={FaCrown} w={8} h={8} mr={2} color='gray.400' />
+                        )
+                        : 
+                        (
+                          <Icon as={FaCrown} w={8} h={8} mr={2} color='orange.400' />
+                          )
+                  }
+                  <Flex flex='1' justifyContent={"center"} aligntopDepartments='center'>
+                    
+                    <Box>
+                      <Text fontWeight='bold'>
+                      {topDepartment[1]?.department}
+                      </Text>
+                    </Box>  
+                  </Flex>
+                  <Badge colorScheme='gray'  h='full' py='0.5' px='4' w='auto' variant='solid'>
+                    <Text fontWeight='bold' fontSize='sm'>
+                      {topDepartment[1]?.average}
+                    </Text>
+                  </Badge>
+                </Flex>
+                <Center height='20'>
+                  <Divider orientation='vertical' />
+                </Center>
+              <Flex key={topDepartment[2]?.department} flex='1' justifyContent={"space-between"} aligntopDepartments='center' py='3' px='5' >
+                  { topDepartment[2]?.position=== 1 ?
+                    (
+                      <Icon as={FaCrown} w={8} h={8} mr={2} color='yellow.400' />
+                      )
+                      : topDepartment[2]?.position=== 2 ?
+                      (
+                        <Icon as={FaCrown} w={8} h={8} mr={2} color='gray.400' />
+                        )
+                        : 
+                        (
+                          <Icon as={FaCrown} w={8} h={8} mr={2} color='orange.400' />
+                          )
+                  }
+                  <Flex flex='1' justifyContent={"center"} aligntopDepartments='center'>
+                    
+                    <Box>
+                      <Text fontWeight='bold'>
+                      {topDepartment[2]?.department}
+                      </Text>
+                    </Box>  
+                  </Flex>
+                  <Badge colorScheme='gray'  h='full' py='0.5' px='4' w='auto' variant='solid'>
+                    <Text fontWeight='bold' fontSize='sm'>
+                      {topDepartment[2]?.average}
+                    </Text>
+                  </Badge>
+                </Flex>
+              </>
+            ) : null}
 
-                { index< 2 ?
-                  (
-                    <Center height='20'>
-                      <Divider orientation='vertical' />
-                    </Center>
-                  )
-                : null
-                }
-
-              }) }
             </HStack>
             
           </Box>
