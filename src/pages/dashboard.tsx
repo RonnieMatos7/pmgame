@@ -117,7 +117,7 @@ export default function Dashboard() {
 
             {topDepartment ? (
               <>
-              <Flex key={topDepartment[0]?.department} flex='1' justifyContent={"space-between"} aligntopDepartments='center' py='3' px='5' >
+              <Flex key={topDepartment[0]?.department} flex='1' justifyContent={"space-between"} align='center' py='3' px='5' >
                   { topDepartment[0]?.position=== 1 ?
                     (
                       <Icon as={FaCrown} w={8} h={8} mr={2} color='yellow.400' />
@@ -131,7 +131,7 @@ export default function Dashboard() {
                           <Icon as={FaCrown} w={8} h={8} mr={2} color='orange.400' />
                           )
                   }
-                  <Flex flex='1' justifyContent={"center"} aligntopDepartments='center'>
+                  <Flex flex='1' justifyContent={"center"} align='center'>
                     
                     <Box>
                       <Text fontWeight='bold'>
@@ -148,7 +148,7 @@ export default function Dashboard() {
                 <Center height='20'>
                   <Divider orientation='vertical' />
                 </Center>
-              <Flex key={topDepartment[1]?.department} flex='1' justifyContent={"space-between"} aligntopDepartments='center' py='3' px='5' >
+              <Flex key={topDepartment[1]?.department} flex='1' justifyContent={"space-between"} align='center' py='3' px='5' >
                   { topDepartment[1]?.position=== 1 ?
                     (
                       <Icon as={FaCrown} w={8} h={8} mr={2} color='yellow.400' />
@@ -162,7 +162,7 @@ export default function Dashboard() {
                           <Icon as={FaCrown} w={8} h={8} mr={2} color='orange.400' />
                           )
                   }
-                  <Flex flex='1' justifyContent={"center"} aligntopDepartments='center'>
+                  <Flex flex='1' justifyContent={"center"} align='center'>
                     
                     <Box>
                       <Text fontWeight='bold'>
@@ -179,7 +179,7 @@ export default function Dashboard() {
                 <Center height='20'>
                   <Divider orientation='vertical' />
                 </Center>
-              <Flex key={topDepartment[2]?.department} flex='1' justifyContent={"space-between"} aligntopDepartments='center' py='3' px='5' >
+              <Flex key={topDepartment[2]?.department} flex='1' justifyContent={"space-between"} align='center' py='3' px='5' >
                   { topDepartment[2]?.position=== 1 ?
                     (
                       <Icon as={FaCrown} w={8} h={8} mr={2} color='yellow.400' />
@@ -193,7 +193,7 @@ export default function Dashboard() {
                           <Icon as={FaCrown} w={8} h={8} mr={2} color='orange.400' />
                           )
                   }
-                  <Flex flex='1' justifyContent={"center"} aligntopDepartments='center'>
+                  <Flex flex='1' justifyContent={"center"} align='center'>
                     
                     <Box>
                       <Text fontWeight='bold'>
@@ -227,7 +227,7 @@ export default function Dashboard() {
                     <Th justifyContent={"center"}>Posição</Th>
                     <Th justifyContent={"flex-start"}>Avatar</Th>
                     <Th justifyContent={"flex-start"}>Jogador</Th>
-                    <Th justifyContent={"fcenter"}>Conquistas</Th>
+                    <Th justifyContent={"center"}>Conquistas</Th>
                     <Th justifyContent={"flex-end"}>Pontuação</Th>
                   </Tr>
                 </Thead>
@@ -290,10 +290,30 @@ export default function Dashboard() {
                             <Text fontSize='sm'>{player?.department}</Text>
                           </Box>  
                         </Td>
-                        <Td justifyContent={"center"}>
+                        <Td >
                           <AvatarGroup size='md' max={3}>
+                            { player.badges[0] &&<Tooltip hasArrow label={`${player.badges[0].title}`} placement='top'><Avatar key={player.badges[0].title} name={player.badges[0]?.title} src={`/badges/${player.badges[0]?.title}.png`} /></Tooltip>}
+                            { player.badges[1] &&<Tooltip hasArrow label={`${player.badges[1].title}`} placement='top'><Avatar key={player.badges[1].title} name={player.badges[1]?.title} src={`/badges/${player.badges[1]?.title}.png`} /></Tooltip>}
+                            { player.badges[2] &&<Tooltip hasArrow label={`${player.badges[2].title}`} placement='top'><Avatar key={player.badges[2].title} name={player.badges[2]?.title} src={`/badges/${player.badges[2]?.title}.png`} /></Tooltip>}
+                            { player.badges[3] &&<Tooltip hasArrow label={`${player.badges[3].title}`} placement='top'><Avatar key={player.badges[3].title} name={player.badges[3]?.title} src={`/badges/${player.badges[3]?.title}.png`} /></Tooltip>}
+                            { player.badges[4] &&<Tooltip hasArrow label={`${player.badges[4].title}`} placement='top'><Avatar key={player.badges[4].title} name={player.badges[4]?.title} src={`/badges/${player.badges[4]?.title}.png`} /></Tooltip>}
+                            { player.badges[5] &&<Tooltip hasArrow label={`${player.badges[5].title}`} placement='top'><Avatar key={player.badges[5].title} name={player.badges[5]?.title} src={`/badges/${player.badges[5]?.title}.png`} /></Tooltip>}
+                            { player.badges[6] &&<Tooltip hasArrow label={`${player.badges[6].title}`} placement='top'><Avatar key={player.badges[6].title} name={player.badges[6]?.title} src={`/badges/${player.badges[6]?.title}.png`} /></Tooltip>}
+                            { player.badges[7] &&<Tooltip hasArrow label={`${player.badges[7].title}`} placement='top'><Avatar key={player.badges[7].title} name={player.badges[7]?.title} src={`/badges/${player.badges[7]?.title}.png`} /></Tooltip>}
+                            { player.badges[8] &&<Tooltip hasArrow label={`${player.badges[8].title}`} placement='top'><Avatar key={player.badges[8].title} name={player.badges[8]?.title} src={`/badges/${player.badges[8]?.title}.png`} /></Tooltip>}
+                            { player.badges[9] &&<Tooltip hasArrow label={`${player.badges[9].title}`} placement='top'><Avatar key={player.badges[9].title} name={player.badges[9]?.title} src={`/badges/${player.badges[9]?.title}.png`} /></Tooltip>}
+                            { player.badges[10] &&<Tooltip hasArrow label={`${player.badges[10].title}`} placement='top'><Avatar key={player.badges[10].title} name={player.badges[10]?.title} src={`/badges/${player.badges[10]?.title}.png`} /></Tooltip>}
+                            { player.badges[11] &&<Tooltip hasArrow label={`${player.badges[11].title}`} placement='top'><Avatar key={player.badges[11].title} name={player.badges[11]?.title} src={`/badges/${player.badges[11]?.title}.png`} /></Tooltip>}
+                            { player.badges[12] &&<Tooltip hasArrow label={`${player.badges[12].title}`} placement='top'><Avatar key={player.badges[12].title} name={player.badges[12]?.title} src={`/badges/${player.badges[12]?.title}.png`} /></Tooltip>}
+                            { player.badges[13] &&<Tooltip hasArrow label={`${player.badges[13].title}`} placement='top'><Avatar key={player.badges[13].title} name={player.badges[13]?.title} src={`/badges/${player.badges[13]?.title}.png`} /></Tooltip>}
+                            { player.badges[14] &&<Tooltip hasArrow label={`${player.badges[14].title}`} placement='top'><Avatar key={player.badges[14].title} name={player.badges[14]?.title} src={`/badges/${player.badges[14]?.title}.png`} /></Tooltip>}
+                            { player.badges[15] &&<Tooltip hasArrow label={`${player.badges[15].title}`} placement='top'><Avatar key={player.badges[15].title} name={player.badges[15]?.title} src={`/badges/${player.badges[15]?.title}.png`} /></Tooltip>}
+                            { player.badges[16] &&<Tooltip hasArrow label={`${player.badges[16].title}`} placement='top'><Avatar key={player.badges[16].title} name={player.badges[16]?.title} src={`/badges/${player.badges[16]?.title}.png`} /></Tooltip>}
+                            { player.badges[17] &&<Tooltip hasArrow label={`${player.badges[17].title}`} placement='top'><Avatar key={player.badges[17].title} name={player.badges[17]?.title} src={`/badges/${player.badges[17]?.title}.png`} /></Tooltip>}
+
                           {player?.badges?.map((badge,index) =>{
-                              <Avatar key={index} name={badge?.title} src={`/badges/${badge?.title}.png`} />
+                              {/* <Avatar key={index} name={badge?.title} src={`/badges/${badge?.title}.png`} /> */}
+                              {index}
                             })}
                           </AvatarGroup>
                         </Td>
