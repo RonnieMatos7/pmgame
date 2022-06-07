@@ -55,7 +55,8 @@ export default function SolicitationList({ token }) {
         created_at: solicitation.data.created_at,
       };
     })
-    return solicitations.sort((a,b) => (a.created_at < b.created_at) ? 1 : -1);
+    solicitations.sort((a,b) => (a.created_at > b.created_at) ? 1 : -1)
+    return solicitations.sort((a,b) => (a.status > b.status) ? 1 : -1);
   },
 )
 
