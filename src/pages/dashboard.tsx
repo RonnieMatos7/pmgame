@@ -1,6 +1,6 @@
 import { Avatar, AvatarGroup, Badge, Box, Center, Checkbox, Divider, Flex, HStack, Icon, IconButton, Link, SimpleGrid, Table, Tbody, Td, Text, Th, Thead, theme, Tooltip, Tr, VStack } from "@chakra-ui/react";
 import dynamic from 'next/dynamic';
-import { RiPencilFill, RiDeleteBin2Fill, RiArrowLeftSFill, RiArrowRightSFill, RiArrowDownSFill, RiArrowUpSFill, RiSubtractFill } from "react-icons/ri";
+import { RiPencilFill, RiDeleteBin2Fill, RiArrowLeftSFill, RiArrowRightSFill, RiArrowDownSFill, RiArrowUpSFill, RiSubtractFill, RiSearchLine, RiBarChart2Fill } from "react-icons/ri";
 import { FaCrown } from "react-icons/fa";
 import { useQuery } from "react-query";
 import { DepartmentAvatar } from "../components/DepartmentAvatar";
@@ -10,6 +10,7 @@ import { Sidebar } from "../components/Sidebar";
 import { api } from "../services/api";
 import { getAuthCookie } from "../utils/auth-cookies";
 import useSWR from "swr";
+import router from "next/router";
 
 /* const Chart = dynamic(() => import('react-apexcharts'), {
   ssr: false,
@@ -310,11 +311,6 @@ export default function Dashboard() {
                             { player.badges[15] &&<Tooltip hasArrow label={`${player.badges[15].title}`} placement='top'><Avatar key={player.badges[15].title} name={player.badges[15]?.title} src={`/badges/${player.badges[15]?.title}.png`} /></Tooltip>}
                             { player.badges[16] &&<Tooltip hasArrow label={`${player.badges[16].title}`} placement='top'><Avatar key={player.badges[16].title} name={player.badges[16]?.title} src={`/badges/${player.badges[16]?.title}.png`} /></Tooltip>}
                             { player.badges[17] &&<Tooltip hasArrow label={`${player.badges[17].title}`} placement='top'><Avatar key={player.badges[17].title} name={player.badges[17]?.title} src={`/badges/${player.badges[17]?.title}.png`} /></Tooltip>}
-
-                          {player?.badges?.map((badge,index) =>{
-                              {/* <Avatar key={index} name={badge?.title} src={`/badges/${badge?.title}.png`} /> */}
-                              {index}
-                            })}
                           </AvatarGroup>
                         </Td>
                         <Td justifyContent={"flex-end"}>
@@ -323,6 +319,19 @@ export default function Dashboard() {
                             {player?.score}
                           </Text>
                         </Badge>
+                        <Tooltip hasArrow label='Analytics' placement='top'>
+                            <IconButton
+                              bg= 'gray.900'
+                              color= 'gray.50'
+                              onClick={() =>router.push(`/performance/${player.id}`)}
+                              aria-label='delete'
+                              size='md'
+                              isLoading={isLoading}
+                              fontSize="md"
+                              ml='2'
+                              icon={<RiBarChart2Fill />}
+                            />
+                          </Tooltip>
                         </Td>
                       </Tr>
                     )
