@@ -2,7 +2,7 @@ import { NextApiRequest, NextApiResponse } from "next";
 import { query as q } from 'faunadb';
 import { authClient, guestClient } from "../../../utils/fauna-client";
 import { getAuthCookie } from "../../../utils/auth-cookies";
-import { format, parse, parseISO } from "date-fns";
+import { format, getTime, parse, parseISO } from "date-fns";
 
 type Task = {
   month: string,
@@ -51,7 +51,7 @@ export default async (req: NextApiRequest, res: NextApiResponse<Player |any >) =
 
       getUser?.data?.tasks?.map(task => {
         const splitedDate = task.created_at.split('/')
-        const date = new Date(Number(splitedDate[2]), Number(splitedDate[1])-1, Number(splitedDate[0]))
+        const date = getTime(new Date(Number(splitedDate[2]), Number(splitedDate[1])-1, Number(splitedDate[0])))
         //const result = format(date, "yyyy-MM-dd'T'HH:mm:ss.SSSxxx")
         taskPerformance.push({
           x: date,
@@ -72,19 +72,18 @@ export default async (req: NextApiRequest, res: NextApiResponse<Player |any >) =
           .entries(hash)
           .map(([x, y]) => ({ x: x, y }));
 
-      let performance = {
-        date: [],
-        score: []
-      }   
+      let performance = []
+         
 
      result.map(item =>{
-        performance.date.push(item.x)
-        performance.score.push(item.y)
+        performance.push([Number(item.x), item.y])
+
       })
 
-      
+      const sortedArray = performance.sort(function(a, b) { return a[0] - b[0];});
+
       // ok
-      res.status(200).json(performance)
+      res.status(200).json(sortedArray)
     } catch (e) {
       // something went wrong
       res.status(500).json({ error: e.message });

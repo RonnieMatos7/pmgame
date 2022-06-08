@@ -32,13 +32,14 @@ export default function Performance() {
   const { id } = router.query;
   
   
-  const fetcher = (url: RequestInfo | URL) => fetch(url).then((r) => r.json());
+  const fetcher = (url: any) => fetch(url).then((r) => r.json());
 
   const { data: userData, mutate: mutateUser } = useSWR(`/api/user/get/${id}`, fetcher);
+  const { data: user } = useSWR('/api/user', fetcher);
   const { data: rewards, mutate: mutateReward } = useSWR('/api/reward/getAll', fetcher);
   const { data: badges, mutate: mutateBadge} = useSWR('/api/badges/getAll', fetcher);
-  const { data: performance, mutate: mutatePerformance} = useSWR(`/api/performance/${id}`, fetcher);
-  /* const { data: performance, mutate: mutatePerformance} = useSWR(`/api/performance/${userData?.id}`, fetcher); */
+  const { data: performancePlayer} = useSWR(`/api/performance/${id}`, fetcher);
+  const { data: performance} = useSWR(`/api/performance/${user?.id}`, fetcher);
 
   const options = {
     chart: {
@@ -56,6 +57,12 @@ export default function Performance() {
     dataLabels: {
       enabled: false,
     },
+    legend: {
+      show: true,
+      showForSingleSeries: true,
+      position: 'top',
+      horizontalAlign: 'left'
+    },
     tooltip: {
       enabled: false,
     },
@@ -67,7 +74,6 @@ export default function Performance() {
       axisTicks: {
         color: theme.colors.gray[600]
       },
-      categories: performance?.date,
     },
     fill: {
       opacity: 0.3,
@@ -81,7 +87,8 @@ export default function Performance() {
   };
   
   const series = [
-    { name: 'series1', data: performance?.score },
+    { name: userData?.name, data: performancePlayer },
+    { name: user?.name, data: performance  },
     
   ] 
   
@@ -156,7 +163,7 @@ export default function Performance() {
             <Text>Recompensas</Text>
             <SimpleGrid columns={2} gap={"2"} mt={2}>
               {rewards?.map((reward: { data: { title: string; score: number; }; }) => (            
-                <Box flex={1} w={'100%'}>
+                <Box key={reward?.data?.title} flex={1} w={'100%'}>
                   <Text fontSize="sm" color="gray.300" align={"left"}>{reward?.data?.title} {/* - {reward?.data?.score}pts */}</Text>
                   <Progress colorScheme={(userData?.score/reward?.data?.score)*100 >= 100 ? 'green' : 'yellow' } size={"sm"} value={(userData?.score/reward?.data?.score)*100} />               
                 </Box>
@@ -175,10 +182,11 @@ export default function Performance() {
             <Text>Conquistas</Text>
             <SimpleGrid gap={2} columns={9} mt={2}>
               {badges?.map(item=>(
-                <Box bg="gray.900" borderRadius={8} p={1} >
+                <Box bg="gray.900" key={item?.data?.title} borderRadius={8} p={1} >
                   <Center>
+                   { console.log(userData?.badges)}
                     {
-                      userData?.data?.badges.find((a) => a.title === item.title)
+                      userData?.badges?.find((a) => a.title === item?.data?.title)
                       ? <Tooltip hasArrow label={`${item?.data?.title} - ${item?.data?.score} pts`} placement='top'><Avatar size='md' color='gray.500' key={item?.data?.title} name={item?.data?.name} src={`/badges/${item?.data?.title}.png`} /></Tooltip>
                       : <Tooltip hasArrow label={`${item?.data?.title} - ${item?.data?.score} pts`} placement='top'><Avatar size='md' color='gray.500' opacity={'50%'} filter='grayscale(100%)'  key={item?.data?.title} name={item?.data?.name} src={`/badges/${item?.data?.title}.png`} /></Tooltip>
                     }

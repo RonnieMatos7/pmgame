@@ -4,7 +4,7 @@ import * as yup from 'yup';
 import { yupResolver } from '@hookform/resolvers/yup'
 import Link from "next/link";
 import { useRouter } from "next/router";
-import { useMutation, useQuery } from 'react-query'
+import { useMutation, useQuery, useQueryClient } from 'react-query'
 import NextLink from "next/link";
 
 import { Input } from "../../components/Form/Input";
@@ -15,9 +15,8 @@ import { queryClient } from "../../services/queryClient";
 import useSWR from "swr";
 import { getAuthCookie } from "../../utils/auth-cookies";
 import { RiLock2Line } from "react-icons/ri";
-import { ReactChild, ReactFragment, ReactPortal } from "react";
+import { ReactChild, ReactFragment, ReactPortal, useEffect, useState } from "react";
 import dynamic from "next/dynamic";
-
 
 
  const Chart = dynamic(() => import('react-apexcharts'), {
@@ -28,15 +27,41 @@ import dynamic from "next/dynamic";
 
 export default function Performance() {
 
+  const [performanceWithId, SetPerformanceWithId] = useState(0)
+  const [performanceWithName, SetPerformanceWithName] = useState('')
+  const [performanceWithData, SetPerformanceWithData] = useState([])
+
+  const queryClient = useQueryClient()
   const router = useRouter()
-  
-  
-  const fetcher = (url: RequestInfo | URL) => fetch(url).then((r) => r.json());
+
+    
+  const fetcher = (url: any) => fetch(url).then((r) => r.json());
 
   const { data: userData, mutate: mutateUser } = useSWR('/api/user', fetcher);
   const { data: rewards, mutate: mutateReward } = useSWR('/api/reward/getAll', fetcher);
   const { data: badges, mutate: mutateBadge} = useSWR('/api/badges/getAll', fetcher);
   const { data: performance, mutate: mutatePerformance} = useSWR(`/api/performance/${userData?.id}`, fetcher);
+  const { data: compareData, mutate:mutareCompareData} = useSWR(`/api/performance/${performanceWithId}`, fetcher);
+
+  const { data:players, isLoading, error} = useQuery('players', async () => {
+    const response = await api.get('/players')
+    
+    const players = response.data?.map(player => {
+      return {
+        id: player['ref']['@ref'].id,
+        name: player.data.name,
+        department: player.data.department,
+        role: player.data.role,
+        email: player.data.email,
+        score: player.data.score,
+        created_at: player.data.created_at,//format(player.data.created_at, 'dd/MM/yyyy'),
+        image_url: player.data.image_url,
+      };
+    })
+    return players.sort((a,b) => (a.name > b.name) ? 1 : -1);
+  })
+
+  
 
   const options = {
     chart: {
@@ -54,6 +79,12 @@ export default function Performance() {
     dataLabels: {
       enabled: false,
     },
+    legend: {
+      show: true,
+      showForSingleSeries: true,
+      position: 'top',
+      horizontalAlign: 'left'
+    },
     tooltip: {
       enabled: false,
     },
@@ -65,7 +96,6 @@ export default function Performance() {
       axisTicks: {
         color: theme.colors.gray[600]
       },
-      categories: performance?.date,
     },
     fill: {
       opacity: 0.3,
@@ -79,11 +109,8 @@ export default function Performance() {
   };
   
   const series = [
-    { name: 'series1', data: performance?.score },
-
+    { name: userData?.name, data: performance?.score },
   ] 
-  
-
   
 
 
@@ -173,12 +200,12 @@ export default function Performance() {
             <Text>Conquistas</Text>
             <SimpleGrid gap={2} columns={9} mt={2}>
               {badges?.map(item=>(
-                <Box bg="gray.900" borderRadius={8} p={1} >
+                <Box key={item?.data?.title} bg="gray.900" borderRadius={8} p={1} >
                   <Center>
                     {
-                      userData?.data?.badges.find((a) => a.title === item.title)
-                      ? <Tooltip hasArrow label={`${item?.data?.title} - ${item?.data?.score} pts`} placement='top'><Avatar size='md' color='gray.500' key={item?.data?.title} name={item?.data?.name} src={`/badges/${item?.data?.title}.png`} /></Tooltip>
-                      : <Tooltip hasArrow label={`${item?.data?.title} - ${item?.data?.score} pts`} placement='top'><Avatar size='md' color='gray.500' opacity={'50%'} filter='grayscale(100%)'  key={item?.data?.title} name={item?.data?.name} src={`/badges/${item?.data?.title}.png`} /></Tooltip>
+                      userData?.badges?.find((a) => a.title === item?.data?.title)
+                      ? <Tooltip hasArrow label={`${item?.data?.title} - ${item?.data?.score} pts`} placement='top'><Avatar key={item?.data?.title} size='md' color='gray.500'  name={item?.data?.name} src={`/badges/${item?.data?.title}.png`} /></Tooltip>
+                      : <Tooltip hasArrow label={`${item?.data?.title} - ${item?.data?.score} pts`} placement='top'><Avatar key={item?.data?.title} size='md' color='gray.500' opacity={'50%'} filter='grayscale(100%)' name={item?.data?.name} src={`/badges/${item?.data?.title}.png`} /></Tooltip>
                     }
                   </Center>
                 </Box>
@@ -195,7 +222,10 @@ export default function Performance() {
             mr={3}
             w='100%'
             >
-            <Text>Performance</Text>
+            <HStack>
+              <Text>Performance</Text>
+              
+            </HStack>
             <Chart options={options} series={series}type="area" height={160}/>
           </Box>
         </Flex>
