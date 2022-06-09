@@ -12,61 +12,7 @@ import { getAuthCookie } from "../utils/auth-cookies";
 import useSWR from "swr";
 import router from "next/router";
 
-/* const Chart = dynamic(() => import('react-apexcharts'), {
-  ssr: false,
-})
 
-const options = {
-  chart: {
-    toolbar: {
-      show: false,
-    },
-    zoom: {
-      enabled: false,
-    },
-    foreColor: theme.colors.gray[500],
-  },
-  grid: {
-    show: false,
-  },
-  dataLabels: {
-    enabled: false,
-  },
-  tooltip: {
-    enabled: false,
-  },
-  xaxis: {
-    type: 'datetime',
-    axisBorder: {
-      color: theme.colors.gray[600]
-    },
-    axisTicks: {
-      color: theme.colors.gray[600]
-    },
-    categories: [
-      '2021-03-18T00:00:00.000Z',
-      '2021-03-19T00:00:00.000Z',
-      '2021-03-20T00:00:00.000Z',
-      '2021-03-21T00:00:00.000Z',
-      '2021-03-22T00:00:00.000Z',
-      '2021-03-23T00:00:00.000Z',
-      '2021-03-24T00:00:00.000Z',
-    ],
-  },
-  fill: {
-    opacity: 0.3,
-    type: 'gradient',
-    gradient: {
-      shade: 'dark',
-      opacityFrom: 0.7,
-      opacityTo: 0.3,
-    },
-  },
-};
-
-const series = [
-  { name: 'series1', data: [31, 120, 10, 28, 61, 18, 109] }
-] */
 
 export default function Dashboard() {
 
@@ -101,7 +47,7 @@ export default function Dashboard() {
       <Flex w="100%" my="6" maxWidth={1480} mx="auto" px="6">
         <Sidebar />
 
-        <SimpleGrid flex="1" gap="4" columns={1} align="flex-start">
+        <SimpleGrid flex="1" gap="4" columns={1} alignContent="flex-start">
           <Box
             p={["6", "8"]}
             bg="gray.800"
@@ -292,10 +238,10 @@ export default function Dashboard() {
                           </Box>  
                         </Td>
                         <Td >
-                          <AvatarGroup size='md' max={3}>
+                          <AvatarGroup spacing={"-0.75rem"} size='md' max={3}>
                             { player.badges[0] &&<Tooltip hasArrow label={`${player.badges[0].title}`} placement='top'><Avatar key={player.badges[0].title} name={player.badges[0]?.title} src={`/badges/${player.badges[0]?.title}.png`} /></Tooltip>}
-                            { player.badges[1] &&<Tooltip hasArrow label={`${player.badges[1].title}`} placement='top'><Avatar key={player.badges[1].title} name={player.badges[1]?.title} src={`/badges/${player.badges[1]?.title}.png`} /></Tooltip>}
-                            { player.badges[2] &&<Tooltip hasArrow label={`${player.badges[2].title}`} placement='top'><Avatar key={player.badges[2].title} name={player.badges[2]?.title} src={`/badges/${player.badges[2]?.title}.png`} /></Tooltip>}
+                            { player.badges[1] &&<Tooltip hasArrow label={`${player.badges[1].title}`} placement='top'><Avatar ml={"-3"} key={player.badges[1].title} name={player.badges[1]?.title} src={`/badges/${player.badges[1]?.title}.png`} /></Tooltip>}
+                            { player.badges[2] &&<Tooltip hasArrow label={`${player.badges[2].title}`} placement='top'><Avatar ml={"-3"} key={player.badges[2].title} name={player.badges[2]?.title} src={`/badges/${player.badges[2]?.title}.png`} /></Tooltip>}
                             { player.badges[3] &&<Tooltip hasArrow label={`${player.badges[3].title}`} placement='top'><Avatar key={player.badges[3].title} name={player.badges[3]?.title} src={`/badges/${player.badges[3]?.title}.png`} /></Tooltip>}
                             { player.badges[4] &&<Tooltip hasArrow label={`${player.badges[4].title}`} placement='top'><Avatar key={player.badges[4].title} name={player.badges[4]?.title} src={`/badges/${player.badges[4]?.title}.png`} /></Tooltip>}
                             { player.badges[5] &&<Tooltip hasArrow label={`${player.badges[5].title}`} placement='top'><Avatar key={player.badges[5].title} name={player.badges[5]?.title} src={`/badges/${player.badges[5]?.title}.png`} /></Tooltip>}
@@ -325,9 +271,9 @@ export default function Dashboard() {
                               color= 'gray.50'
                               onClick={() =>router.push(`/performance/${player.id}`)}
                               aria-label='delete'
-                              size='md'
+                              size='sm'
                               isLoading={isLoading}
-                              fontSize="md"
+                              fontSize="sm"
                               ml='2'
                               icon={<RiBarChart2Fill />}
                             />
