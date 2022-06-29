@@ -27,12 +27,16 @@ export default async (req: NextApiRequest, res: NextApiResponse<Solicitation[] |
       const solicitations = await authClient(process.env.FAUNA_GUEST_SECRET).query<Solicitation>(
         q.Map(
           q.Paginate(
-            q.Documents(
-              q.Collection('Solicitation')
+            q.Match(
+              q.Index('solicitation_by_status'),
+              "Aguardando aprovação"
             ),
             {size: 2000}
           ),
-          q.Lambda((solicitation) => q.Get(solicitation))
+          q.Lambda("X",
+          q.Get(
+            q.Var("X")
+          ))
         )
       );
       // ok
