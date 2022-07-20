@@ -20,14 +20,14 @@ export default async function user(req, res) {
       q.Get(q.CurrentIdentity())
     );
 
-    const registerLoginLog = await authClient(process.env.FAUNA_GUEST_SECRET).query(
+    /* const registerLoginLog = await authClient(process.env.FAUNA_GUEST_SECRET).query(
       q.Create(q.Collection('LoginLog'), {
         data: {
           player: data,
           login: new Date(),
         },
       })
-    );
+    ); */
 
 
     res.status(200).json({ ...data, id: ref.id });

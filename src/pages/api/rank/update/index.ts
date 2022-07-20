@@ -33,10 +33,23 @@ type Player = {
     position: number,
     score: number,
     old_position: number ,
+    position_log: {},
     rewards: string[],
     tasks: string[],
     badges: string[],
   }
+}
+
+function padTo2Digits(num) {
+  return num.toString().padStart(2, '0');
+}
+
+function formatDate(date) {
+  return [
+    padTo2Digits(date.getDate()),
+    padTo2Digits(date.getMonth() + 1),
+    date.getFullYear(),
+  ].join('/');
 }
 
 export default async (req: NextApiRequest, res: NextApiResponse<Player[] | any >) => {
@@ -61,7 +74,8 @@ export default async (req: NextApiRequest, res: NextApiResponse<Player[] | any >
           ))
         )
       );
-      
+
+
       
       const updatedPlayerPosition = players?.data.map(async item =>{
         const updateUserOldposition = await authClient(process.env.FAUNA_GUEST_SECRET).query<Player>(
@@ -88,7 +102,6 @@ export default async (req: NextApiRequest, res: NextApiResponse<Player[] | any >
       for (let i = 0; i < playersRank.length; i++) {
         if (i > 0 && playersRank[i].data.score < playersRank[i - 1].data.score) {
           rank++;
-          console.log(rank)
         }
         playersRank[i].data.position = rank;
         
@@ -96,12 +109,20 @@ export default async (req: NextApiRequest, res: NextApiResponse<Player[] | any >
 
       let finalRank = []
 
+      
+
       const updatedPlayerRank = playersRank.map(async item =>{
         finalRank.push(`${item.data.position}: ${item.data.name}`)
+        const today = formatDate(new Date())
+        const newPositionLog = item.data.position
         const updateUserNewposition = await authClient(process.env.FAUNA_GUEST_SECRET).query<Player>(
           q.Update(q.Ref(q.Collection('User'), item.ref.id), {
             data: {
               position: item.data.position,
+              position_log: {
+                ...players?.data?.position_log, [today]:newPositionLog
+                
+              }
             },
           })
           )
