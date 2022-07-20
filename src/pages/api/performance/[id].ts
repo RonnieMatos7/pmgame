@@ -10,6 +10,12 @@ type Task = {
   score: number
 }
 
+type Badge = {
+  month: string,
+  created_at: string,
+  score: number
+}
+
 type Player = {
   ref: {
       id: string;
@@ -17,6 +23,7 @@ type Player = {
   data: {
     name: string,
     tasks: Task[],
+    badges: Badge[],
     role: string,
     image_url: string,
     score: number,
@@ -42,17 +49,26 @@ export default async (req: NextApiRequest, res: NextApiResponse<Player |any >) =
       const getUser = await authClient(process.env.FAUNA_GUEST_SECRET).query<Player>(
         q.Get(
           q.Ref(
-            q.Collection('User'), id
+            q.Collection('User'), id,
           )
         )
       );
 
       let taskPerformance = []
+      let accScore = 0
 
       getUser?.data?.tasks?.map(task => {
         const splitedDate = task.created_at.split('/')
         const date = getTime(new Date(Number(splitedDate[2]), Number(splitedDate[1])-1, Number(splitedDate[0])))
-        //const result = format(date, "yyyy-MM-dd'T'HH:mm:ss.SSSxxx")
+        taskPerformance.push({
+          x: date,
+          y: task.score
+        })
+      })
+
+      getUser?.data?.badges?.map(task => {
+        const splitedDate = task.created_at.split('/')
+        const date = getTime(new Date(Number(splitedDate[2]), Number(splitedDate[1])-1, Number(splitedDate[0])))
         taskPerformance.push({
           x: date,
           y: task.score
@@ -68,22 +84,23 @@ export default async (req: NextApiRequest, res: NextApiResponse<Player |any >) =
           else hash[x] = y;
       }
 
+     
       result = Object
           .entries(hash)
           .map(([x, y]) => ({ x: x, y }));
 
       let performance = []
          
+    const sortedResult = result.sort(function(a, b) { return a.x - b.x;});
 
-     result.map(item =>{
-        performance.push([Number(item.x), item.y])
+    sortedResult.map(item =>{
+      accScore += item.y
+        performance.push([Number(item.x), accScore])
 
       })
 
-      const sortedArray = performance.sort(function(a, b) { return a[0] - b[0];});
-
       // ok
-      res.status(200).json(sortedArray)
+      res.status(200).json(performance)
     } catch (e) {
       // something went wrong
       res.status(500).json({ error: e.message });
