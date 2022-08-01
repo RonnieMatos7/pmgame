@@ -94,7 +94,7 @@ export default function Guide() {
                   Consiste em usar técnicas, estratégias e o design de games em outros contextos que não sejam necessariamente associadas aos jogos em si.  É trazer o jogo para a realidade e com isso impactar pontos como engajamento, produtividade, foco, determinação e outros, tornando mais simples atingir metas e objetivos em qualquer contexto.
                 </Text>
                 <Heading mb={"4"} size="md" fontWeight="normal" alignContent={"left"} textAlign={"left"} alignSelf={'left'}>
-                  O que é o PM Game ?
+                  O que é o PM ESE Game ?
                 </Heading>
                 <Text mb={"8"}>
                   Trata-se de um game para incentivar e reconhecer a alta performance dos gerentes de projetos.
